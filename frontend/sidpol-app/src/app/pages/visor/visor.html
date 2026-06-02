@@ -1,0 +1,57 @@
+<div class="visor-wrapper" *ngIf="!cargando">
+
+  <div class="visor-header">
+    <div class="visor-titulo">
+      <i class="fa-solid fa-chart-line"></i>
+      {{ dashboardSeleccionado?.nombre_d || 'Dashboard' }}
+    </div>
+    <div class="visor-combo">
+      <label>Dashboard:</label>
+      <select (change)="onCambiarDashboard($event)">
+        <option *ngFor="let d of dashboards" [value]="d.id_d">
+          {{ d.nombre_d }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="visor-body">
+
+    <aside class="visor-sidebar" *ngIf="dashboardSeleccionado?.paginas?.length > 0">
+      <div class="visor-sidebar-titulo">PÁGINAS</div>
+      <ul class="visor-paginas">
+        <li
+          *ngFor="let p of dashboardSeleccionado.paginas"
+          [class.activa]="paginaActiva?.nombre === p.nombre"
+          (click)="seleccionarPagina(p)">
+          <i class="fa-solid fa-chevron-right"></i>
+          {{ p.nombre }}
+        </li>
+      </ul>
+    </aside>
+
+    <div class="visor-frame-wrapper">
+      <iframe
+        *ngIf="embedUrl"
+        [src]="embedUrl"
+        class="visor-iframe"
+        frameborder="0"
+        allowfullscreen>
+      </iframe>
+      <div *ngIf="!embedUrl" class="visor-vacio">
+        <i class="fa-solid fa-chart-bar"></i>
+        <p>Selecciona un dashboard</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div *ngIf="cargando" class="visor-cargando">
+  <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
+</div>
+
+<div *ngIf="!cargando && dashboards.length === 0" class="visor-vacio">
+  <i class="fa-solid fa-chart-bar"></i>
+  <p>No hay dashboards disponibles</p>
+</div>

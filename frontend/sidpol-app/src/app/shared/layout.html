@@ -1,0 +1,85 @@
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="logo-navbar" (click)="toggleMenu()">
+    <img src="assets/img/logo.png" class="nav-logo"/>
+  </div>
+  <div class="navbar-content">
+    <div class="navbar-left">
+      <button class="btn-menu"><span>SIDPOL</span></button>
+    </div>
+    <div class="navbar-right">
+      <span class="usuario-nombre">{{ usuario?.nombre }} {{ usuario?.apellido }}</span>
+
+      <div class="avatar-wrapper">
+        <i class="fa-solid fa-circle-user nav-avatar" (click)="toggleMenuUsuario()"></i>
+
+        <div class="dropdown-usuario" *ngIf="menuUsuarioAbierto">
+          <ul class="dropdown-menu-u">
+            <li (click)="pantallaCompleta()">
+              <i class="fa-solid fa-expand"></i> Pantalla completa
+            </li>
+            <li (click)="verPerfil()">
+              <i class="fa-solid fa-user"></i> Ver perfil
+            </li>
+            <li class="dropdown-danger" (click)="cerrarSesion()">
+              <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+            </li>
+          </ul>
+          <div class="dropdown-overlay" (click)="cerrarMenuUsuario()"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<div class="sidebar-overlay" *ngIf="menuAbierto" (click)="toggleMenu()"></div>
+<aside class="sidebar" [class.abierto]="menuAbierto">
+  <div class="sidebar-header">
+    <img src="assets/img/logo.png" class="sidebar-logo"/>
+    <span>MENU</span>
+  </div>
+  <ul class="sidebar-menu">
+    <ng-container *ngFor="let m of modulosConSubs">
+      <li (click)="toggleModulo(m.id_m)">
+        <div class="menu-folder">
+          <i class="fa-regular fa-folder"></i>
+          <span>{{ m.nombre_m | uppercase }}</span>
+          <i class="fa-solid fa-chevron-right flecha" [class.girada]="m.abierto"></i>
+        </div>
+      </li>
+      <ul class="submenu" [class.visible]="m.abierto">
+        <li *ngFor="let s of m.submodulos"
+            (click)="irA('/' + s.ruta)">
+          <i class="fa-solid fa-chevron-right"></i>
+          <span>{{ s.nombre_sm | uppercase }}</span>
+        </li>
+      </ul>
+    </ng-container>
+  </ul>
+</aside>
+
+
+<!-- MODAL PERFIL -->
+<div class="modal-overlay" *ngIf="perfilAbierto" (click)="cerrarPerfil()"></div>
+<div class="modal modal-perfil" *ngIf="perfilAbierto">
+  <h3 class="modal-titulo">PERFIL DEL USUARIO</h3>
+  <div class="campo">
+    <label>Nombre:</label>
+    <input type="text" [value]="usuario?.nombre" readonly/>
+  </div>
+  <div class="campo">
+    <label>Apellidos:</label>
+    <input type="text" [value]="usuario?.apellido" readonly/>
+  </div>
+  <div class="campo">
+    <label>Email:</label>
+    <input type="text" [value]="usuario?.correo || '—'" readonly/>
+  </div>
+  <div class="modal-acciones">
+    <button class="btn-cerrar-perfil" (click)="cerrarPerfil()">CERRAR</button>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

@@ -1,0 +1,56 @@
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <div class="logo-area">
+      <div class="logo-circle">
+        <img src="assets/img/logo.png"/>
+      </div>
+    </div>
+
+    <h1 class="title">Portal SIDPOL</h1>
+    <p class="subtitle">SIDPOL 360 – Inteligencia Policial</p>
+
+    <div class="error-msg" *ngIf="errorMsg">
+      <i class="fa-solid fa-circle-xmark"></i> {{ errorMsg }}
+    </div>
+
+    <div class="form-group" [class.input-error]="errorUsername">
+      <span class="input-icon">
+        <i class="fa-regular fa-user"></i>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="username"
+        placeholder="Ingrese su usuario"
+        (keyup.enter)="iniciarSesion()"
+        (ngModelChange)="errorUsername = ''; errorMsg = ''"/>
+    </div>
+    <p class="campo-error" *ngIf="errorUsername">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorUsername }}
+    </p>
+
+    <div class="form-group" [class.input-error]="errorContrasenia">
+      <span class="input-icon">
+        <i class="fa-solid fa-lock"></i>
+      </span>
+      <input
+        [type]="mostrarPass ? 'text' : 'password'"
+        [(ngModel)]="contrasenia"
+        placeholder="Ingrese su contraseña"
+        (keyup.enter)="iniciarSesion()"
+        (ngModelChange)="errorContrasenia = ''; errorMsg = ''"/>
+      <span class="toggle-pass" (click)="togglePass()">
+        <i [class]="mostrarPass ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'"></i>
+      </span>
+    </div>
+    <p class="campo-error" *ngIf="errorContrasenia">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ errorContrasenia }}
+    </p>
+
+    <button class="btn-ingresar" (click)="iniciarSesion()" [disabled]="loading">
+      @if (!loading) { INGRESAR }
+      @if (loading) { <span class="loader"></span> }
+    </button>
+
+  </div>
+</div>

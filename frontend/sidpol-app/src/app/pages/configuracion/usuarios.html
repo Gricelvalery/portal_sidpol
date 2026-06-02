@@ -1,0 +1,180 @@
+<div class="config-page">
+  <h2 class="page-titulo">Usuarios</h2>
+
+  <div class="tabla-card">
+    <div class="tabla-toolbar">
+      <input class="buscador" type="text" placeholder="Buscar..."
+        [(ngModel)]="busqueda" (input)="buscar()"/>
+      <button class="btn-agregar" (click)="abrirAgregar()">
+        <i class="fa-solid fa-circle-plus"></i> Agregar Usuario
+      </button>
+    </div>
+
+    <div *ngIf="cargando" class="cargando">Cargando...</div>
+
+    <table *ngIf="!cargando" class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Email</th>
+          <th>Autorizado</th>
+          <th>Posición</th>
+          <th>Área</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of usuariosFiltrados">
+          <td>{{ u.nombre_u }}</td>
+          <td>{{ u.apellido_u }}</td>
+          <td>{{ u.correo_u }}</td>
+          <td>
+            <i class="fa-solid"
+               [class.fa-circle-check]="u.autorizado"
+               [class.fa-circle-xmark]="!u.autorizado"
+               [class.autorizado-si]="u.autorizado"
+               [class.autorizado-no]="!u.autorizado">
+            </i>
+          </td>
+          <td>{{ u.nombre_posicion || '—' }}</td>
+          <td>{{ u.nombre_area || '—' }}</td>
+          <td>
+            <span class="badge"
+              [class.badge-admin]="u.rol_u === 'Admin'"
+              [class.badge-user]="u.rol_u !== 'Admin'">
+              {{ u.rol_u }}
+            </span>
+          </td>
+          <td class="acciones">
+            <button class="btn-icono" title="Editar" (click)="abrirEditar(u)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icono btn-icono-gear" title="Permisos" (click)="abrirPermisos(u)">
+              <i class="fa-solid fa-gear"></i>
+            </button>
+            <button class="btn-icono btn-icono-trash" title="Eliminar" (click)="confirmarEliminar(u)">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="usuariosFiltrados.length === 0">
+          <td colspan="8" class="sin-datos">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- NOTIFICACION -->
+<div class="notificacion" 
+     *ngIf="notificacionVisible"
+     [class.notificacion-error]="notificacionTipo === 'error'">
+  <i class="fa-solid" 
+     [class.fa-circle-check]="notificacionTipo === 'exito'"
+     [class.fa-circle-xmark]="notificacionTipo === 'error'">
+  </i>
+  {{ notificacion }}
+</div>
+
+<!-- MODAL AGREGAR Y EDITAR -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()"></div>
+<div class="modal" *ngIf="modalAbierto">
+  <h3 class="modal-titulo">{{ modoEditar ? 'Editar usuario' : 'Agregar usuario' }}</h3>
+
+  <div class="campo-fila">
+    <div class="campo">
+      <label>Nombre*</label>
+      <input type="text" [(ngModel)]="form.nombre_u" placeholder="Nombre*"/>
+    </div>
+    <div class="campo">
+      <label>Apellido*</label>
+      <input type="text" [(ngModel)]="form.apellido_u" placeholder="Apellido*"/>
+    </div>
+  </div>
+
+  <div class="campo">
+    <label>Email*</label>
+    <input type="email" [(ngModel)]="form.correo_u" placeholder="Email*"/>
+  </div>
+
+  <div class="campo" *ngIf="!modoEditar">
+    <label>Contraseña*</label>
+    <input type="password" [(ngModel)]="form.contrasenia_u" placeholder="Contraseña*"/>
+  </div>
+
+  <div class="campo-fila">
+    <div class="campo">
+      <label>Posición</label>
+      <select [(ngModel)]="form.id_posicion">
+        <option [ngValue]="null">Seleccionar posición</option>
+        <option *ngFor="let p of posiciones" [ngValue]="p.id_posicion">{{ p.nombre_posicion }}</option>
+      </select>
+    </div>
+    <div class="campo">
+      <label>Rol</label>
+      <select [(ngModel)]="form.rol_u">
+        <option value="User">User</option>
+        <option value="Admin">Admin</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="campo-checkbox">
+    <input type="checkbox" id="autorizado" [(ngModel)]="form.autorizado"/>
+    <label for="autorizado">Autorizado</label>
+  </div>
+
+  <div class="modal-acciones">
+    <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+    <button class="btn-guardar" (click)="guardar()">Guardar</button>
+  </div>
+</div>
+
+<!-- MODAL PERMISOS -->
+<div class="modal-overlay" *ngIf="modalPermisosAbierto"></div>
+<div class="modal modal-permisos" *ngIf="modalPermisosAbierto">
+  <h3 class="modal-titulo">Permisos de usuario</h3>
+  <p class="permisos-subtitulo">
+    <strong>{{ usuarioSeleccionado?.nombre_u }} {{ usuarioSeleccionado?.apellido_u }}</strong>
+  </p>
+
+  <div class="permisos-lista">
+
+    <!-- SECCION DASHBOARDS -->
+    <div class="permisos-seccion-titulo">
+      <i class="fa-solid fa-chart-line"></i> DASHBOARDS
+    </div>
+    <div *ngFor="let grupo of dashboardsAgrupados" class="permisos-grupo">
+      <div class="permisos-grupo-titulo">{{ grupo.key }}</div>
+      <div *ngFor="let d of grupo.dashboards" class="permiso-item">
+        <input type="checkbox" [id]="'d_' + d.id_d"
+          [checked]="tienePermiso(d.id_d)"
+          (change)="togglePermiso(d.id_d)"/>
+        <label [for]="'d_' + d.id_d">{{ d.nombre_d }}</label>
+      </div>
+    </div>
+    <div *ngIf="dashboards.length === 0" class="sin-datos-small">
+      No hay dashboards registrados
+    </div>
+
+  </div>
+
+  <div class="modal-acciones">
+    <button class="btn-cancelar" (click)="modalPermisosAbierto = false">Cancelar</button>
+    <button class="btn-guardar" (click)="guardarPermisos()">Guardar</button>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal-overlay" *ngIf="modalEliminarAbierto"></div>
+<div class="modal modal-small" *ngIf="modalEliminarAbierto">
+  <h3 class="modal-titulo">¿Eliminar usuario?</h3>
+  <p class="modal-texto">
+    Se eliminará a <strong>{{ usuarioSeleccionado?.nombre_u }} {{ usuarioSeleccionado?.apellido_u }}</strong>. Esta acción no se puede deshacer.
+  </p>
+  <div class="modal-acciones">
+    <button class="btn-cancelar" (click)="modalEliminarAbierto = false">Cancelar</button>
+    <button class="btn-eliminar" (click)="eliminar()">Eliminar</button>
+  </div>
+</div>

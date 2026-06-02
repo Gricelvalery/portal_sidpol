@@ -1,0 +1,63 @@
+<div class="config-page">
+  <h2 class="page-titulo">Dependencias</h2>
+  <div class="tabla-card">
+    <div class="tabla-toolbar">
+      <input
+        class="buscador"
+        type="text"
+        placeholder="Buscar..."
+        [(ngModel)]="busqueda"
+        (input)="buscar()"
+      />
+      <button class="btn-agregar" (click)="abrirAgregar()">
+        <i class="fa-solid fa-circle-plus"></i> Agregar Dependencia
+      </button>
+    </div>
+
+    <div *ngIf="cargando" class="cargando">Cargando...</div>
+
+    <table *ngIf="!cargando" class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of areasFiltradas">
+          <td>{{ a.nombre_area }}</td>
+          <td>{{ a.descripcion_area }}</td>
+          <td>
+            <button class="btn-icono" (click)="abrirEditar(a)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="areasFiltradas.length === 0">
+          <td colspan="3" class="sin-datos">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()"></div>
+<div class="modal" *ngIf="modalAbierto">
+  <h3 class="modal-titulo">{{ modoEditar ? 'Editar área' : 'Agregar área' }}</h3>
+
+  <div class="campo">
+    <label>Nombre*</label>
+    <input type="text" [(ngModel)]="form.nombre_area" placeholder="Nombre*"/>
+  </div>
+  <div class="campo">
+    <label>Descripción*</label>
+    <input type="text" [(ngModel)]="form.descripcion_area" placeholder="Descripción*"/>
+  </div>
+
+  <div class="modal-acciones">
+    <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+    <button class="btn-guardar" (click)="guardar()">Guardar</button>
+  </div>
+</div>

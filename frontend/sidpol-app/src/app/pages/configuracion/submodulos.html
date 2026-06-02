@@ -1,0 +1,73 @@
+<div class="config-page">
+  <h2 class="page-titulo">Submódulos</h2>
+
+  <div class="tabla-card">
+    <div class="tabla-toolbar">
+      <input
+        class="buscador"
+        type="text"
+        placeholder="Buscar..."
+        [(ngModel)]="busqueda"
+        (input)="buscar()"
+      />
+      <button class="btn-agregar" (click)="abrirAgregar()">
+        <i class="fa-solid fa-circle-plus"></i> Agregar Sub Módulo
+      </button>
+    </div>
+
+    <div *ngIf="cargando" class="cargando">Cargando...</div>
+
+    <table *ngIf="!cargando" class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Módulo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of submodulosFiltrados">
+          <td>{{ s.nombre_sm }}</td>
+          <td>{{ s.descripcion_sm }}</td>
+          <td>{{ s.nombre_m || '—' }}</td>
+          <td>
+            <button class="btn-icono" (click)="abrirEditar(s)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="submodulosFiltrados.length === 0">
+          <td colspan="4" class="sin-datos">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()"></div>
+<div class="modal" *ngIf="modalAbierto">
+  <h3 class="modal-titulo">{{ modoEditar ? 'Editar submódulos' : 'Agregar submódulos' }}</h3>
+
+  <div class="campo">
+    <label>Nombre*</label>
+    <input type="text" [(ngModel)]="form.nombre_sm" placeholder="Nombre*"/>
+  </div>
+  <div class="campo">
+    <label>Descripción*</label>
+    <input type="text" [(ngModel)]="form.descripcion_sm" placeholder="Descripción*"/>
+  </div>
+  <div class="campo">
+    <label>Módulo*</label>
+    <select [(ngModel)]="form.modulos_id_m">
+      <option [ngValue]="null">Módulo*</option>
+      <option *ngFor="let m of modulos" [ngValue]="m.id_m">{{ m.nombre_m }}</option>
+    </select>
+  </div>
+
+  <div class="modal-acciones">
+    <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+    <button class="btn-guardar" (click)="guardar()">Guardar</button>
+  </div>
+</div>

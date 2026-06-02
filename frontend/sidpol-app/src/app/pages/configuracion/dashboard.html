@@ -1,0 +1,82 @@
+<div class="config-page">
+  <h2 class="page-titulo">Dashboards</h2>
+
+  <div class="tabla-card">
+    <div class="tabla-toolbar">
+      <input
+        class="buscador"
+        type="text"
+        placeholder="Buscar..."
+        [(ngModel)]="busqueda"
+        (input)="buscar()"
+      />
+      <button class="btn-agregar" (click)="abrirAgregar()">
+        <i class="fa-solid fa-circle-plus"></i> Agregar Dashboard
+      </button>
+    </div>
+
+    <div *ngIf="cargando" class="cargando">Cargando...</div>
+
+    <table *ngIf="!cargando" class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Link</th>
+          <th>Submódulo</th>
+          <th>Módulo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of dashboardsFiltrados">
+          <td>{{ d.nombre_d }}</td>
+          <td>
+            <a [href]="d.link_d" target="_blank" class="link-dashboard">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              Ver
+            </a>
+          </td>
+          <td>{{ d.nombre_sm || '—' }}</td>
+          <td>{{ d.nombre_m || '—' }}</td>
+          <td>
+            <button class="btn-icono" (click)="abrirEditar(d)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="dashboardsFiltrados.length === 0">
+          <td colspan="5" class="sin-datos">Sin resultados</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()"></div>
+<div class="modal" *ngIf="modalAbierto">
+  <h3 class="modal-titulo">{{ modoEditar ? 'Editar Dashboard' : 'Agregar Dashboard' }}</h3>
+
+  <div class="campo">
+    <label>Nombre*</label>
+    <input type="text" [(ngModel)]="form.nombre_d" placeholder="Nombre*"/>
+  </div>
+  <div class="campo">
+    <label>Link*</label>
+    <input type="text" [(ngModel)]="form.link_d" placeholder="https://..."/>
+  </div>
+  <div class="campo">
+    <label>Submódulo*</label>
+    <select [(ngModel)]="form.submodulos_id_sm">
+      <option [ngValue]="null">Seleccionar submódulo</option>
+      <option *ngFor="let s of submodulos" [ngValue]="s.id_sm">
+        {{ s.nombre_m }} — {{ s.nombre_sm }}
+      </option>
+    </select>
+  </div>
+
+  <div class="modal-acciones">
+    <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+    <button class="btn-guardar" (click)="guardar()">Guardar</button>
+  </div>
+</div>
