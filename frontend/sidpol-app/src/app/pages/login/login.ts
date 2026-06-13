@@ -1,5 +1,5 @@
 
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth';
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class Login {
+export class Login implements OnInit {
 
   username = '';
   contrasenia = '';
@@ -30,6 +30,12 @@ export class Login {
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit() {
+    if (this.auth.estaLogueado()) {
+      this.router.navigate(['/inicio']);
+    }
+  }
 
   togglePass() {
     this.mostrarPass = !this.mostrarPass;

@@ -45,6 +45,17 @@
   </div>
 </div>
 
+<!-- NOTIFICACION -->
+<div class="notificacion"
+     *ngIf="notificacionVisible"
+     [class.notificacion-error]="notificacionTipo === 'error'">
+  <i class="fa-solid"
+     [class.fa-circle-check]="notificacionTipo === 'exito'"
+     [class.fa-circle-xmark]="notificacionTipo === 'error'">
+  </i>
+  {{ notificacion }}
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()"></div>
 <div class="modal" *ngIf="modalAbierto">

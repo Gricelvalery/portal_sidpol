@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ModulosService } from '../../services/modulos';
@@ -16,16 +16,30 @@ export class Modulos implements OnInit {
   areas: any[] = [];
   cargando = true;
   busqueda = '';
+  notificacion = '';
+  notificacionVisible = false;
+  notificacionTipo = 'exito';
 
   modalAbierto = false;
   modoEditar = false;
   moduloSeleccionado: any = null;
   form = { nombre_m: '', descripcion_m: '', id_area: null as any };
 
-  constructor(private svc: ModulosService) {}
+  constructor(private svc: ModulosService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarDatos();
+  }
+
+  mostrarNotificacion(msg: string, tipo: string = 'exito') {
+    this.notificacion = msg;
+    this.notificacionTipo = tipo;
+    this.notificacionVisible = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.notificacionVisible = false;
+      this.cdr.detectChanges();
+    }, 3000);
   }
 
   cargarDatos() {
@@ -34,11 +48,18 @@ export class Modulos implements OnInit {
         this.modulos = data;
         this.modulosFiltrados = data;
         this.cargando = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.cargando = false; }
+      error: () => {
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
     });
     this.svc.getAreas().subscribe({
-      next: (data) => { this.areas = data; }
+      next: (data) => {
+        this.areas = data;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -72,11 +93,25 @@ export class Modulos implements OnInit {
 
     if (this.modoEditar) {
       this.svc.editarModulo(this.moduloSeleccionado.id_m, this.form).subscribe({
-        next: () => { this.cerrarModal(); this.cargarDatos(); }
+        next: () => {
+          this.cerrarModal();
+          this.cargarDatos();
+          this.mostrarNotificacion('Modulo actualizado correctamente');
+        },
+        error: () => {
+          this.mostrarNotificacion('Error al actualizar modulo', 'error');
+        }
       });
     } else {
       this.svc.crearModulo(this.form).subscribe({
-        next: () => { this.cerrarModal(); this.cargarDatos(); }
+        next: () => {
+          this.cerrarModal();
+          this.cargarDatos();
+          this.mostrarNotificacion('Modulo creado correctamente');
+        },
+        error: () => {
+          this.mostrarNotificacion('Error al crear modulo', 'error');
+        }
       });
     }
   }

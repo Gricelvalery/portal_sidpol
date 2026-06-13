@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+function generarUsername(nombre, apellido) {
+  return `${nombre}.${apellido}`.toLowerCase().replace(/\s+/g, '');
+}
+
 router.get('/', async (req, res) => {
   try {
     const result = await db.query(`
@@ -21,7 +25,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { nombre_u, apellido_u, correo_u, contrasenia_u, rol_u, id_posicion, autorizado } = req.body;
-  const username = (nombre_u + '.' + apellido_u).toLowerCase().replace(/\s+/g, '');
+  const username = generarUsername(nombre_u, apellido_u);
   try {
     const existe = await db.query('SELECT id_u FROM usuario WHERE username = $1', [username]);
     if (existe.rows.length > 0) {
@@ -40,12 +44,23 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { nombre_u, apellido_u, correo_u, rol_u, id_posicion, autorizado } = req.body;
+  const username = generarUsername(nombre_u, apellido_u);
+
   try {
+    const existe = await db.query(
+      'SELECT id_u FROM usuario WHERE username = $1 AND id_u <> $2',
+      [username, req.params.id]
+    );
+
+    if (existe.rows.length > 0) {
+      return res.status(400).json({ error: `El usuario ${username} ya existe` });
+    }
+
     const result = await db.query(`
       UPDATE usuario 
-      SET nombre_u=$1, apellido_u=$2, correo_u=$3, rol_u=$4, id_posicion=$5, autorizado=$6
-      WHERE id_u=$7 RETURNING *`,
-      [nombre_u, apellido_u, correo_u, rol_u, id_posicion, autorizado, req.params.id]
+      SET nombre_u=$1, apellido_u=$2, correo_u=$3, rol_u=$4, id_posicion=$5, autorizado=$6, username=$7
+      WHERE id_u=$8 RETURNING *`,
+      [nombre_u, apellido_u, correo_u, rol_u, id_posicion, autorizado, username, req.params.id]
     );
     res.json({ success: true, usuario: result.rows[0] });
   } catch (err) {

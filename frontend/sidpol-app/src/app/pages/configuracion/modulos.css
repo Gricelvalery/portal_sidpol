@@ -222,3 +222,36 @@
 .btn-guardar:hover {
   background: #155a27;
 }
+
+/* NOTIFICACION */
+.notificacion {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: #1a6b30;
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 9999;
+  animation: slideIn 0.3s ease;
+}
+
+.notificacion i {
+  font-size: 1.2rem;
+}
+
+.notificacion-error {
+  background: #c0392b;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
