@@ -132,8 +132,25 @@ export class Layout implements OnInit {
       .replace(/\s+/g, '-');
   }
 
-  irA(ruta: string) {
-    this.menuAbierto = false;
-    this.router.navigate([ruta]);
+  irA(s: any) {
+  console.log('irA llamado con:', s);
+  this.menuAbierto = false;
+
+  if (s.ruta) {
+    console.log('Navegando a:', '/' + s.ruta);
+    this.router.navigate(['/' + s.ruta]);
+    return;
+  }
+
+  const mapaConfiguracion: { [key: string]: string } = {
+    'Módulos': '/configuracion/modulos',
+    'Submódulos': '/configuracion/submodulos',
+    'Dependencias': '/configuracion/area',
+    'Usuarios': '/configuracion/usuarios',
+    'Dashboard': '/configuracion/dashboard'
+  };
+
+  const destino = mapaConfiguracion[s.nombre_sm];
+  this.router.navigate([destino || '/inicio']);
   }
 }

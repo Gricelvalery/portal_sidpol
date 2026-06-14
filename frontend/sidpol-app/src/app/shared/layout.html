@@ -8,7 +8,7 @@
       <button class="btn-menu"><span>SIDPOL</span></button>
     </div>
     <div class="navbar-right">
-      <span class="usuario-nombre">{{ usuario?.nombre }} {{ usuario?.apellido }}</span>
+      <span class="usuario-nombre">{{ usuario?.nombre_u }} {{ usuario?.apellido_u }}</span>
 
       <div class="avatar-wrapper">
         <i class="fa-solid fa-circle-user nav-avatar" (click)="toggleMenuUsuario()"></i>
@@ -51,7 +51,7 @@
       </li>
       <ul class="submenu" [class.visible]="m.abierto">
         <li *ngFor="let s of m.submodulos"
-            (click)="irA('/' + s.ruta)">
+            (click)="irA(s)">
           <i class="fa-solid fa-chevron-right"></i>
           <span>{{ s.nombre_sm | uppercase }}</span>
         </li>
@@ -67,15 +67,15 @@
   <h3 class="modal-titulo">PERFIL DEL USUARIO</h3>
   <div class="campo">
     <label>Nombre:</label>
-    <input type="text" [value]="usuario?.nombre" readonly/>
+    <input type="text" [value]="usuario?.nombre_u" readonly/>
   </div>
   <div class="campo">
     <label>Apellidos:</label>
-    <input type="text" [value]="usuario?.apellido" readonly/>
+    <input type="text" [value]="usuario?.apellido_u" readonly/>
   </div>
   <div class="campo">
     <label>Email:</label>
-    <input type="text" [value]="usuario?.correo || '—'" readonly/>
+    <input type="text" [value]="usuario?.correo_u || '—'" readonly/>
   </div>
   <div class="modal-acciones">
     <button class="btn-cerrar-perfil" (click)="cerrarPerfil()">CERRAR</button>

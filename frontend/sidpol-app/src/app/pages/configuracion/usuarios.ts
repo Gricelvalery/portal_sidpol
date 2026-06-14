@@ -120,7 +120,7 @@ export class Usuarios implements OnInit {
           this.cargarDatos();
           this.mostrarNotificacion('Usuario creado correctamente');
         },
-        error: (err) => { alert(err.error?.error || 'Error al crear usuario'); }
+        error: (err) => { alert(JSON.stringify(err.error)); }
       });
     }
   }

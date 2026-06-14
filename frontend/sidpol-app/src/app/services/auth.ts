@@ -38,7 +38,7 @@ export class AuthService {
 
   esAdmin(): boolean {
     const u = this.getUsuario();
-    return u?.rol === 'Admin';
+    return u?.rol_u === 'Admin';
   }
 
   tieneAccesoRuta(ruta: string): boolean {
