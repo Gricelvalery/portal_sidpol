@@ -184,6 +184,32 @@
   border-bottom-color: #1a6b30;
 }
 
+.campo input.input-error,
+.campo select.input-error {
+  border-bottom-color: #c0392b;
+  background: #fff7f6;
+}
+
+.mensaje-error {
+  color: #c0392b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.mensaje-error-general {
+  background: #fff7f6;
+  border: 1px solid #f0c5bf;
+  border-radius: 8px;
+  color: #a93226;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+}
+
 .modal-acciones {
   display: flex;
   justify-content: flex-end;

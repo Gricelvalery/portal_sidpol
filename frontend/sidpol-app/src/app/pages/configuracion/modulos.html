@@ -61,20 +61,36 @@
 <div class="modal" *ngIf="modalAbierto">
   <h3 class="modal-titulo">{{ modoEditar ? 'Editar Módulo' : 'Agregar Módulo' }}</h3>
 
+  <div class="mensaje-error-general" *ngIf="errorFormularioGeneral">
+    {{ errorFormularioGeneral }}
+  </div>
+
   <div class="campo">
     <label>Nombre*</label>
-    <input type="text" [(ngModel)]="form.nombre_m" placeholder="Nombre*"/>
+    <input type="text" [(ngModel)]="form.nombre_m" (ngModelChange)="limpiarError('nombre_m')"
+      [class.input-error]="erroresFormulario['nombre_m']" placeholder="Nombre*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['nombre_m']">
+      {{ erroresFormulario['nombre_m'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Descripción*</label>
-    <input type="text" [(ngModel)]="form.descripcion_m" placeholder="Descripción*"/>
+    <input type="text" [(ngModel)]="form.descripcion_m" (ngModelChange)="limpiarError('descripcion_m')"
+      [class.input-error]="erroresFormulario['descripcion_m']" placeholder="Descripción*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['descripcion_m']">
+      {{ erroresFormulario['descripcion_m'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Área</label>
-    <select [(ngModel)]="form.id_area">
+    <select [(ngModel)]="form.id_area" (ngModelChange)="limpiarError('id_area')"
+      [class.input-error]="erroresFormulario['id_area']">
       <option [ngValue]="null">Área</option>
       <option *ngFor="let a of areas" [ngValue]="a.id_area">{{ a.nombre_area }}</option>
     </select>
+    <span class="mensaje-error" *ngIf="erroresFormulario['id_area']">
+      {{ erroresFormulario['id_area'] }}
+    </span>
   </div>
 
   <div class="modal-acciones">

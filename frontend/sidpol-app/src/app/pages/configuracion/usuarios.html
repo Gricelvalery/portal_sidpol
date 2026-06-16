@@ -82,34 +82,58 @@
 <div class="modal" *ngIf="modalAbierto">
   <h3 class="modal-titulo">{{ modoEditar ? 'Editar usuario' : 'Agregar usuario' }}</h3>
 
+  <div class="mensaje-error-general" *ngIf="errorFormularioGeneral">
+    {{ errorFormularioGeneral }}
+  </div>
+
   <div class="campo-fila">
     <div class="campo">
       <label>Nombre*</label>
-      <input type="text" [(ngModel)]="form.nombre_u" placeholder="Nombre*"/>
+      <input type="text" [(ngModel)]="form.nombre_u" (ngModelChange)="limpiarError('nombre_u')"
+        [class.input-error]="erroresFormulario['nombre_u']" placeholder="Nombre*"/>
+      <span class="mensaje-error" *ngIf="erroresFormulario['nombre_u']">
+        {{ erroresFormulario['nombre_u'] }}
+      </span>
     </div>
     <div class="campo">
       <label>Apellido*</label>
-      <input type="text" [(ngModel)]="form.apellido_u" placeholder="Apellido*"/>
+      <input type="text" [(ngModel)]="form.apellido_u" (ngModelChange)="limpiarError('apellido_u')"
+        [class.input-error]="erroresFormulario['apellido_u']" placeholder="Apellido*"/>
+      <span class="mensaje-error" *ngIf="erroresFormulario['apellido_u']">
+        {{ erroresFormulario['apellido_u'] }}
+      </span>
     </div>
   </div>
 
   <div class="campo">
     <label>Email*</label>
-    <input type="email" [(ngModel)]="form.correo_u" placeholder="Email*"/>
+    <input type="email" [(ngModel)]="form.correo_u" (ngModelChange)="limpiarError('correo_u')"
+      [class.input-error]="erroresFormulario['correo_u']" placeholder="Email*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['correo_u']">
+      {{ erroresFormulario['correo_u'] }}
+    </span>
   </div>
 
   <div class="campo" *ngIf="!modoEditar">
     <label>Contraseña*</label>
-    <input type="password" [(ngModel)]="form.contrasenia_u" placeholder="Contraseña*"/>
+    <input type="password" [(ngModel)]="form.contrasenia_u" (ngModelChange)="limpiarError('contrasenia_u')"
+      [class.input-error]="erroresFormulario['contrasenia_u']" placeholder="Contraseña*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['contrasenia_u']">
+      {{ erroresFormulario['contrasenia_u'] }}
+    </span>
   </div>
 
   <div class="campo-fila">
     <div class="campo">
       <label>Posición</label>
-      <select [(ngModel)]="form.id_posicion">
+      <select [(ngModel)]="form.id_posicion" (ngModelChange)="limpiarError('id_posicion')"
+        [class.input-error]="erroresFormulario['id_posicion']">
         <option [ngValue]="null">Seleccionar posición</option>
         <option *ngFor="let p of posiciones" [ngValue]="p.id_posicion">{{ p.nombre_posicion }}</option>
       </select>
+      <span class="mensaje-error" *ngIf="erroresFormulario['id_posicion']">
+        {{ erroresFormulario['id_posicion'] }}
+      </span>
     </div>
     <div class="campo">
       <label>Rol</label>

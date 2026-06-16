@@ -61,20 +61,36 @@
 <div class="modal" *ngIf="modalAbierto">
   <h3 class="modal-titulo">{{ modoEditar ? 'Editar submódulos' : 'Agregar submódulos' }}</h3>
 
+  <div class="mensaje-error-general" *ngIf="errorFormularioGeneral">
+    {{ errorFormularioGeneral }}
+  </div>
+
   <div class="campo">
     <label>Nombre*</label>
-    <input type="text" [(ngModel)]="form.nombre_sm" placeholder="Nombre*"/>
+    <input type="text" [(ngModel)]="form.nombre_sm" (ngModelChange)="limpiarError('nombre_sm')"
+      [class.input-error]="erroresFormulario['nombre_sm']" placeholder="Nombre*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['nombre_sm']">
+      {{ erroresFormulario['nombre_sm'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Descripción*</label>
-    <input type="text" [(ngModel)]="form.descripcion_sm" placeholder="Descripción*"/>
+    <input type="text" [(ngModel)]="form.descripcion_sm" (ngModelChange)="limpiarError('descripcion_sm')"
+      [class.input-error]="erroresFormulario['descripcion_sm']" placeholder="Descripción*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['descripcion_sm']">
+      {{ erroresFormulario['descripcion_sm'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Módulo*</label>
-    <select [(ngModel)]="form.modulos_id_m">
+    <select [(ngModel)]="form.modulos_id_m" (ngModelChange)="limpiarError('modulos_id_m')"
+      [class.input-error]="erroresFormulario['modulos_id_m']">
       <option [ngValue]="null">Módulo*</option>
       <option *ngFor="let m of modulos" [ngValue]="m.id_m">{{ m.nombre_m }}</option>
     </select>
+    <span class="mensaje-error" *ngIf="erroresFormulario['modulos_id_m']">
+      {{ erroresFormulario['modulos_id_m'] }}
+    </span>
   </div>
 
   <div class="modal-acciones">

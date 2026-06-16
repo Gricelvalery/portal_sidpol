@@ -57,22 +57,38 @@
 <div class="modal" *ngIf="modalAbierto">
   <h3 class="modal-titulo">{{ modoEditar ? 'Editar Dashboard' : 'Agregar Dashboard' }}</h3>
 
+  <div class="mensaje-error-general" *ngIf="errorFormularioGeneral">
+    {{ errorFormularioGeneral }}
+  </div>
+
   <div class="campo">
     <label>Nombre*</label>
-    <input type="text" [(ngModel)]="form.nombre_d" placeholder="Nombre*"/>
+    <input type="text" [(ngModel)]="form.nombre_d" (ngModelChange)="limpiarError('nombre_d')"
+      [class.input-error]="erroresFormulario['nombre_d']" placeholder="Nombre*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['nombre_d']">
+      {{ erroresFormulario['nombre_d'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Link*</label>
-    <input type="text" [(ngModel)]="form.link_d" placeholder="https://..."/>
+    <input type="text" [(ngModel)]="form.link_d" (ngModelChange)="limpiarError('link_d')"
+      [class.input-error]="erroresFormulario['link_d']" placeholder="https://..."/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['link_d']">
+      {{ erroresFormulario['link_d'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Submódulo*</label>
-    <select [(ngModel)]="form.submodulos_id_sm">
+    <select [(ngModel)]="form.submodulos_id_sm" (ngModelChange)="limpiarError('submodulos_id_sm')"
+      [class.input-error]="erroresFormulario['submodulos_id_sm']">
       <option [ngValue]="null">Seleccionar submódulo</option>
       <option *ngFor="let s of submodulos" [ngValue]="s.id_sm">
         {{ s.nombre_m }} — {{ s.nombre_sm }}
       </option>
     </select>
+    <span class="mensaje-error" *ngIf="erroresFormulario['submodulos_id_sm']">
+      {{ erroresFormulario['submodulos_id_sm'] }}
+    </span>
   </div>
 
   <div class="modal-acciones">

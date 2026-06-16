@@ -1,5 +1,7 @@
 const { body, validationResult } = require('express-validator');
 
+const soloLetrasSinEspacios = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$/;
+
 const validar = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -9,8 +11,14 @@ const validar = (req, res, next) => {
 };
 
 const crearUsuarioValidator = [
-  body('nombre_u').trim().notEmpty().withMessage('El nombre es requerido'),
-  body('apellido_u').trim().notEmpty().withMessage('El apellido es requerido'),
+  body('nombre_u')
+    .trim()
+    .notEmpty().withMessage('El nombre es requerido')
+    .matches(soloLetrasSinEspacios).withMessage('El nombre solo debe contener letras, sin números ni espacios'),
+  body('apellido_u')
+    .trim()
+    .notEmpty().withMessage('El apellido es requerido')
+    .matches(soloLetrasSinEspacios).withMessage('El apellido solo debe contener letras, sin números ni espacios'),
   body('correo_u').isEmail().withMessage('Correo inválido'),
   body('contrasenia_u').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres'),
   body('rol_u').isIn(['Admin', 'User']).withMessage('Rol inválido'),
@@ -19,8 +27,14 @@ const crearUsuarioValidator = [
 ];
 
 const actualizarUsuarioValidator = [
-  body('nombre_u').trim().notEmpty().withMessage('El nombre es requerido'),
-  body('apellido_u').trim().notEmpty().withMessage('El apellido es requerido'),
+  body('nombre_u')
+    .trim()
+    .notEmpty().withMessage('El nombre es requerido')
+    .matches(soloLetrasSinEspacios).withMessage('El nombre solo debe contener letras, sin números ni espacios'),
+  body('apellido_u')
+    .trim()
+    .notEmpty().withMessage('El apellido es requerido')
+    .matches(soloLetrasSinEspacios).withMessage('El apellido solo debe contener letras, sin números ni espacios'),
   body('correo_u').isEmail().withMessage('Correo inválido'),
   body('rol_u').isIn(['Admin', 'User']).withMessage('Rol inválido'),
   body('id_posicion').isInt().withMessage('Posición inválida'),

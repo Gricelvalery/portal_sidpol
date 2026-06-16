@@ -47,13 +47,25 @@
 <div class="modal" *ngIf="modalAbierto">
   <h3 class="modal-titulo">{{ modoEditar ? 'Editar área' : 'Agregar área' }}</h3>
 
+  <div class="mensaje-error-general" *ngIf="errorFormularioGeneral">
+    {{ errorFormularioGeneral }}
+  </div>
+
   <div class="campo">
     <label>Nombre*</label>
-    <input type="text" [(ngModel)]="form.nombre_area" placeholder="Nombre*"/>
+    <input type="text" [(ngModel)]="form.nombre_area" (ngModelChange)="limpiarError('nombre_area')"
+      [class.input-error]="erroresFormulario['nombre_area']" placeholder="Nombre*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['nombre_area']">
+      {{ erroresFormulario['nombre_area'] }}
+    </span>
   </div>
   <div class="campo">
     <label>Descripción*</label>
-    <input type="text" [(ngModel)]="form.descripcion_area" placeholder="Descripción*"/>
+    <input type="text" [(ngModel)]="form.descripcion_area" (ngModelChange)="limpiarError('descripcion_area')"
+      [class.input-error]="erroresFormulario['descripcion_area']" placeholder="Descripción*"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['descripcion_area']">
+      {{ erroresFormulario['descripcion_area'] }}
+    </span>
   </div>
 
   <div class="modal-acciones">

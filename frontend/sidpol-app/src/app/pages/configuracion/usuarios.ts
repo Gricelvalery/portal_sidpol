@@ -20,6 +20,8 @@ export class Usuarios implements OnInit {
   notificacion = '';
   notificacionVisible = false;
   notificacionTipo = 'exito';
+  erroresFormulario: Record<string, string> = {};
+  errorFormularioGeneral = '';
 
   modalAbierto = false;
   modoEditar = false;
@@ -80,6 +82,8 @@ export class Usuarios implements OnInit {
   abrirAgregar() {
     this.modoEditar = false;
     this.form = { nombre_u: '', apellido_u: '', correo_u: '', contrasenia_u: '', rol_u: 'User', id_posicion: null, autorizado: false };
+    this.erroresFormulario = {};
+    this.errorFormularioGeneral = '';
     this.modalAbierto = true;
   }
 
@@ -95,13 +99,78 @@ export class Usuarios implements OnInit {
       id_posicion: u.id_posicion,
       autorizado: u.autorizado || false
     };
+    this.erroresFormulario = {};
+    this.errorFormularioGeneral = '';
     this.modalAbierto = true;
   }
 
-  cerrarModal() { this.modalAbierto = false; }
+  cerrarModal() {
+    this.modalAbierto = false;
+    this.erroresFormulario = {};
+    this.errorFormularioGeneral = '';
+  }
+
+  limpiarError(campo: string) {
+    if (!this.erroresFormulario[campo]) return;
+    const { [campo]: _omitido, ...errores } = this.erroresFormulario;
+    this.erroresFormulario = errores;
+    this.errorFormularioGeneral = '';
+  }
+
+  private aplicarErroresFormulario(err: any, mensajeFallback: string) {
+    const errores = err.error?.errors;
+
+    if (Array.isArray(errores)) {
+      this.erroresFormulario = errores.reduce((acc: Record<string, string>, error: any) => {
+        if (error.path && !acc[error.path]) acc[error.path] = error.msg;
+        return acc;
+      }, {});
+      this.errorFormularioGeneral = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.errorFormularioGeneral = err.error?.error || mensajeFallback;
+    this.cdr.detectChanges();
+  }
 
   guardar() {
-    if (!this.form.nombre_u || !this.form.apellido_u || !this.form.correo_u) return;
+    this.erroresFormulario = {};
+    this.errorFormularioGeneral = '';
+    const errores: Record<string, string> = {};
+    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.correo_u);
+    const soloLetrasSinEspacios = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$/;
+
+    if (!this.form.nombre_u) {
+      errores['nombre_u'] = 'El nombre es requerido';
+    } else if (!soloLetrasSinEspacios.test(this.form.nombre_u)) {
+      errores['nombre_u'] = 'El nombre solo debe contener letras, sin números ni espacios';
+    }
+
+    if (!this.form.apellido_u) {
+      errores['apellido_u'] = 'El apellido es requerido';
+    } else if (!soloLetrasSinEspacios.test(this.form.apellido_u)) {
+      errores['apellido_u'] = 'El apellido solo debe contener letras, sin números ni espacios';
+    }
+    if (!this.form.correo_u) {
+      errores['correo_u'] = 'El correo es requerido';
+    } else if (!correoValido) {
+      errores['correo_u'] = 'Correo inválido';
+    }
+    if (!this.form.id_posicion) errores['id_posicion'] = 'Selecciona una posición';
+
+    if (!this.modoEditar) {
+      if (!this.form.contrasenia_u) {
+        errores['contrasenia_u'] = 'La contraseña es requerida';
+      } else if (this.form.contrasenia_u.length < 6) {
+        errores['contrasenia_u'] = 'La contraseña debe tener al menos 6 caracteres';
+      }
+    }
+
+    if (Object.keys(errores).length > 0) {
+      this.erroresFormulario = errores;
+      return;
+    }
 
     if (this.modoEditar) {
       this.svc.editarUsuario(this.usuarioSeleccionado.id_u, this.form).subscribe({
@@ -110,17 +179,16 @@ export class Usuarios implements OnInit {
           this.cargarDatos();
           this.mostrarNotificacion('Usuario actualizado correctamente');
         },
-        error: (err) => { alert(err.error?.error || 'Error al editar usuario'); }
+        error: (err) => { this.aplicarErroresFormulario(err, 'Error al editar usuario'); }
       });
     } else {
-      if (!this.form.contrasenia_u) return;
       this.svc.crearUsuario(this.form).subscribe({
         next: () => {
           this.cerrarModal();
           this.cargarDatos();
           this.mostrarNotificacion('Usuario creado correctamente');
         },
-        error: (err) => { alert(JSON.stringify(err.error)); }
+        error: (err) => { this.aplicarErroresFormulario(err, 'Error al crear usuario'); }
       });
     }
   }
