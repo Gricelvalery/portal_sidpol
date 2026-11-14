@@ -46,6 +46,15 @@ for (const origen of CORS_ORIGIN) {
   if (!valido) errores.push('CORS_ORIGIN contiene un origen inválido (formato: http://host:puerto, sin "/" final)');
 }
 
+// Dominios permitidos para los links de dashboards (iframe del visor)
+const POWERBI_HOSTS = (texto('POWERBI_HOSTS', { porDefecto: 'app.powerbi.com' }))
+  .split(',')
+  .map(h => h.trim().toLowerCase())
+  .filter(Boolean);
+if (POWERBI_HOSTS.length === 0 || POWERBI_HOSTS.some(h => !/^[a-z0-9.-]+$/.test(h))) {
+  errores.push('POWERBI_HOSTS debe ser una lista de dominios separados por coma');
+}
+
 // TRUST_PROXY: false (local), true, o número de proxies delante (p. ej. 1 en Render/Nginx)
 const trustCrudo = texto('TRUST_PROXY', { porDefecto: 'false' }).toLowerCase();
 let TRUST_PROXY;
@@ -65,6 +74,7 @@ const env = {
   JWT_SECRET,
   JWT_EXPIRES_IN,
   CORS_ORIGIN,
+  POWERBI_HOSTS,
   TRUST_PROXY,
   RATE_LIMIT_API: entero('RATE_LIMIT_API', { porDefecto: 500 }),
   RATE_LIMIT_LOGIN: entero('RATE_LIMIT_LOGIN', { porDefecto: 5, max: 100 }),

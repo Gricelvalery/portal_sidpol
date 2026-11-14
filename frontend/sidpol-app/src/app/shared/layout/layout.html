@@ -1,0 +1,96 @@
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="logo-navbar" (click)="toggleMenu()">
+    <img src="assets/img/logo.png" class="nav-logo"/>
+  </div>
+  <div class="navbar-content">
+    <div class="navbar-left">
+      <button class="btn-menu"><span>SIDPOL</span></button>
+    </div>
+    <div class="navbar-right">
+      <span class="usuario-nombre">{{ usuario()?.nombres_u }} {{ usuario()?.apellido_paterno_u }}</span>
+
+      <div class="avatar-wrapper">
+        <i class="fa-solid fa-circle-user nav-avatar" (click)="toggleMenuUsuario()"></i>
+
+        @if (menuUsuarioAbierto()) {
+          <div class="dropdown-usuario">
+            <ul class="dropdown-menu-u">
+              <li (click)="pantallaCompleta()">
+                <i class="fa-solid fa-expand"></i> Pantalla completa
+              </li>
+              <li (click)="verPerfil()">
+                <i class="fa-solid fa-user"></i> Ver perfil
+              </li>
+              <li class="dropdown-danger" (click)="cerrarSesion()">
+                <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+              </li>
+            </ul>
+            <div class="dropdown-overlay" (click)="cerrarMenuUsuario()"></div>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+@if (menuAbierto()) {
+  <div class="sidebar-overlay" (click)="toggleMenu()"></div>
+}
+<aside class="sidebar" [class.abierto]="menuAbierto()">
+  <div class="sidebar-header">
+    <img src="assets/img/logo.png" class="sidebar-logo"/>
+    <span>MENU</span>
+  </div>
+  <ul class="sidebar-menu">
+    @for (m of modulos(); track m.id_m) {
+      <li (click)="toggleModulo(m.id_m)">
+        <div class="menu-folder">
+          <i class="fa-regular fa-folder"></i>
+          <span>{{ m.nombre_m | uppercase }}</span>
+          <i class="fa-solid fa-chevron-right flecha" [class.girada]="estaAbierto(m.id_m)"></i>
+        </div>
+      </li>
+      <ul class="submenu" [class.visible]="estaAbierto(m.id_m)">
+        @for (s of m.submodulos; track s.id_sm) {
+          <li (click)="irA(s)">
+            <i class="fa-solid fa-chevron-right"></i>
+            <span>{{ s.nombre_sm | uppercase }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </ul>
+</aside>
+
+
+<!-- MODAL PERFIL -->
+@if (perfilAbierto()) {
+  <div class="modal-overlay" (click)="cerrarPerfil()"></div>
+  <div class="modal modal-perfil">
+    <h3 class="modal-titulo">PERFIL DEL USUARIO</h3>
+    <div class="campo">
+      <label>Nombres:</label>
+      <input type="text" [value]="usuario()?.nombres_u" readonly/>
+    </div>
+    <div class="campo">
+      <label>Apellidos:</label>
+      <input type="text" [value]="(usuario()?.apellido_paterno_u || '') + ' ' + (usuario()?.apellido_materno_u || '')" readonly/>
+    </div>
+    <div class="campo">
+      <label>Usuario:</label>
+      <input type="text" [value]="usuario()?.username" readonly/>
+    </div>
+    <div class="campo">
+      <label>Email:</label>
+      <input type="text" [value]="usuario()?.correo_u || '—'" readonly/>
+    </div>
+    <div class="modal-acciones">
+      <button class="btn-cerrar-perfil" (click)="cerrarPerfil()">CERRAR</button>
+    </div>
+  </div>
+}
+
+<router-outlet></router-outlet>

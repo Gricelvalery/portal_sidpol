@@ -1,0 +1,84 @@
+@if (!cargando() && dashboards().length > 0) {
+  <div class="visor-wrapper">
+
+    <div class="visor-header">
+      <div class="visor-titulo">
+        <i class="fa-solid fa-chart-line"></i>
+        {{ seleccionado()?.nombre_d || 'Dashboard' }}
+      </div>
+      <div class="visor-combo">
+        <label>Dashboard:</label>
+        <select (change)="onCambiarDashboard($event)">
+          @for (d of dashboards(); track d.id_d) {
+            <option [value]="d.id_d">
+              {{ d.nombre_d }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="visor-body">
+
+      @if ((seleccionado()?.paginas?.length ?? 0) > 0) {
+        <aside class="visor-sidebar">
+          <div class="visor-sidebar-titulo">PÁGINAS</div>
+          <ul class="visor-paginas">
+            @for (p of seleccionado()?.paginas ?? []; track p.nombre) {
+              <li
+                [class.activa]="paginaActiva()?.nombre === p.nombre"
+                (click)="seleccionarPagina(p)">
+                <i class="fa-solid fa-chevron-right"></i>
+                {{ p.nombre }}
+              </li>
+            }
+          </ul>
+        </aside>
+      }
+
+      <div class="visor-frame-wrapper">
+        @if (embedUrl(); as url) {
+          <!-- sandbox: Power BI necesita scripts y su propio origen; allow/allowfullscreen
+               mantienen su botón de pantalla completa. Solo se cargan URLs permitidas. -->
+          <iframe
+            [src]="url"
+            class="visor-iframe"
+            frameborder="0"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"
+            allow="fullscreen"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin">
+          </iframe>
+        } @else if (urlNoPermitida()) {
+          <div class="visor-vacio">
+            <i class="fa-solid fa-shield-halved"></i>
+            <p>Dashboard no disponible: el enlace no pertenece a un dominio permitido.</p>
+          </div>
+        } @else {
+          <div class="visor-vacio">
+            <i class="fa-solid fa-chart-bar"></i>
+            <p>Selecciona un dashboard</p>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+}
+
+@if (cargando()) {
+  <div class="visor-cargando">
+    <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
+  </div>
+}
+
+@if (!cargando() && sinAcceso()) {
+  <app-sin-accesos></app-sin-accesos>
+}
+
+@if (!cargando() && !sinAcceso() && dashboards().length === 0) {
+  <div class="visor-vacio">
+    <i class="fa-solid fa-chart-bar"></i>
+    <p>No hay dashboards disponibles</p>
+  </div>
+}

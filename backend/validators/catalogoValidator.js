@@ -1,5 +1,7 @@
 const { body } = require('express-validator');
+const env = require('../config/env');
 const { validar, idParam } = require('../middlewares/validacion');
+const { esUrlDashboardPermitida } = require('../utils/urlDashboard');
 
 // Los largos máximos coinciden con las columnas de la BD
 const textoObligatorio = (campo, mensaje, max) =>
@@ -43,8 +45,8 @@ const dashboardCampos = [
     .trim()
     .notEmpty().withMessage('El link es requerido')
     .isLength({ max: 500 }).withMessage('Máximo 500 caracteres')
-    .isURL({ protocols: ['http', 'https'], require_protocol: true })
-    .withMessage('Ingresa un link válido que empiece con http:// o https://'),
+    .custom((link) => esUrlDashboardPermitida(link))
+    .withMessage(`El link debe ser un enlace https de Power BI (${env.POWERBI_HOSTS.join(', ')})`),
   enteroObligatorio('submodulos_id_sm', 'El submódulo es requerido'),
   // paginas: [{ nombre, seccion }]. "seccion" se concatena en la URL de Power BI.
   body('paginas')

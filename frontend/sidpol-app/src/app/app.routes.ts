@@ -1,19 +1,15 @@
 import { Routes } from '@angular/router';
-import { Layout } from './shared/layout';
-import { authGuard } from './guards/auth-guard';
-import { adminGuard } from './guards/admin-guard';
+import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
+import { Layout } from './shared/layout/layout';
 
+// Todas las pantallas se cargan bajo demanda (lazy loading).
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
-  },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   {
     path: 'login',
-    loadComponent: () =>
-      import('./pages/login/login').then(m => m.Login)
+    loadComponent: () => import('./features/login/login').then((m) => m.Login)
   },
 
   {
@@ -23,63 +19,23 @@ export const routes: Routes = [
     children: [
       {
         path: 'inicio',
-        loadComponent: () =>
-          import('./pages/inicio/inicio').then(m => m.Inicio)
+        loadComponent: () => import('./features/inicio/inicio').then((m) => m.Inicio)
       },
-
       {
         path: 'visor',
-        loadComponent: () =>
-          import('./pages/visor/visor').then(m => m.Visor)
+        loadComponent: () => import('./features/visor/visor').then((m) => m.Visor)
       },
       {
         path: 'visor/:id',
-        loadComponent: () =>
-          import('./pages/visor/visor').then(m => m.Visor)
+        loadComponent: () => import('./features/visor/visor').then((m) => m.Visor)
       },
-
       {
+        // Solo existe para el admin (canMatch); el backend también lo exige.
         path: 'configuracion',
         canMatch: [adminGuard],
-        children: [
-          {
-            path: 'modulos',
-            loadComponent: () =>
-              import('./pages/configuracion/modulos').then(m => m.Modulos)
-          },
-          {
-            path: 'submodulos',
-            loadComponent: () =>
-              import('./pages/configuracion/submodulos').then(m => m.Submodulos)
-          },
-          {
-            path: 'area',
-            loadComponent: () =>
-              import('./pages/configuracion/area').then(m => m.Area)
-          },
-          {
-            path: 'usuarios',
-            loadComponent: () =>
-              import('./pages/configuracion/usuarios').then(m => m.Usuarios)
-          },
-          {
-            path: 'dashboard',
-            loadComponent: () =>
-              import('./pages/configuracion/dashboard').then(m => m.Dashboard)
-          },
-          {
-            path: '',
-            redirectTo: 'modulos',
-            pathMatch: 'full'
-          }
-        ]
+        loadChildren: () => import('./features/configuracion/configuracion.routes').then((m) => m.CONFIGURACION_ROUTES)
       },
-
-      {
-        path: '',
-        redirectTo: 'inicio',
-        pathMatch: 'full'
-      }
+      { path: '', redirectTo: 'inicio', pathMatch: 'full' }
     ]
   },
 
