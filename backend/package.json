@@ -29,7 +29,9 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "pino": "10.4.0",
-    "pino-http": "11.0.0"
+    "pino-http": "11.0.0",
+    "swagger-ui-express": "5.0.1",
+    "yaml": "2.9.1"
   },
   "overrides": {
     "encodeurl": "2.0.0",

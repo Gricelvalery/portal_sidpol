@@ -28,6 +28,15 @@ function entero(nombre, { porDefecto, min = 1, max = Number.MAX_SAFE_INTEGER } =
   return n;
 }
 
+function booleano(nombre, porDefecto) {
+  const crudo = (process.env[nombre] ?? '').trim().toLowerCase();
+  if (!crudo) return porDefecto;
+  if (crudo === 'true') return true;
+  if (crudo === 'false') return false;
+  errores.push(`${nombre} debe ser true o false`);
+  return porDefecto;
+}
+
 const JWT_SECRET = texto('JWT_SECRET') || '';
 if (JWT_SECRET && JWT_SECRET.length < 32) {
   errores.push('JWT_SECRET debe tener al menos 32 caracteres');
@@ -88,6 +97,8 @@ const env = {
   LOG_LEVEL: texto('LOG_LEVEL', {
     porDefecto: process.env.NODE_ENV === 'test' ? 'silent' : 'info',
   }),
+  // Swagger en /api/docs: activo por defecto, salvo en producción (DOCS_ENABLED=true lo fuerza)
+  DOCS_ENABLED: booleano('DOCS_ENABLED', process.env.NODE_ENV !== 'production'),
   RATE_LIMIT_API: entero('RATE_LIMIT_API', { porDefecto: 500 }),
   RATE_LIMIT_LOGIN: entero('RATE_LIMIT_LOGIN', { porDefecto: 5, max: 100 }),
   BCRYPT_COST: entero('BCRYPT_COST', { porDefecto: 12, min: 4, max: 15 }),
