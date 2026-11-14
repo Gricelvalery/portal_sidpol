@@ -13,7 +13,9 @@ describe('NotificacionService', () => {
 
   it('muestra y oculta el toast a los 3 segundos', () => {
     servicio.exito('Guardado');
-    expect(servicio.lista()).toEqual([expect.objectContaining({ mensaje: 'Guardado', tipo: 'exito' })]);
+    expect(servicio.lista()).toEqual([
+      expect.objectContaining({ mensaje: 'Guardado', tipo: 'exito' }),
+    ]);
     vi.advanceTimersByTime(2999);
     expect(servicio.lista()).toHaveLength(1);
     vi.advanceTimersByTime(1);

@@ -50,22 +50,30 @@
   line-height: 1.5;
 }
 
-.autorizado-si { color: #1a6b30; font-size: 1.2rem;
+.autorizado-si {
+  color: #1a6b30;
+  font-size: 1.2rem;
 }
 
-.autorizado-no { color: #c0392b; font-size: 1.2rem;
+.autorizado-no {
+  color: #c0392b;
+  font-size: 1.2rem;
 }
 
-.btn-icono-gear { color: #555;
+.btn-icono-gear {
+  color: #555;
 }
 
-.btn-icono-gear:hover { background: #f0f0f0;
+.btn-icono-gear:hover {
+  background: #f0f0f0;
 }
 
-.btn-icono-trash { color: #c0392b;
+.btn-icono-trash {
+  color: #c0392b;
 }
 
-.btn-icono-trash:hover { background: #fdf0f0;
+.btn-icono-trash:hover {
+  background: #fdf0f0;
 }
 
 .campo-checkbox {
@@ -76,7 +84,7 @@
   cursor: pointer;
 }
 
-.campo-checkbox input[type="checkbox"] {
+.campo-checkbox input[type='checkbox'] {
   width: 18px;
   height: 18px;
   accent-color: #1a6b30;
@@ -131,7 +139,7 @@
   background: #f8fbf8;
 }
 
-.permiso-item input[type="checkbox"] {
+.permiso-item input[type='checkbox'] {
   width: 16px;
   height: 16px;
   accent-color: #1a6b30;

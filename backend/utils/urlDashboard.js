@@ -12,11 +12,13 @@ function esUrlDashboardPermitida(valor, hosts = env.POWERBI_HOSTS) {
   } catch {
     return false;
   }
-  return url.protocol === 'https:'
-    && url.port === ''
-    && !url.username
-    && !url.password
-    && hosts.includes(url.hostname.toLowerCase());
+  return (
+    url.protocol === 'https:' &&
+    url.port === '' &&
+    !url.username &&
+    !url.password &&
+    hosts.includes(url.hostname.toLowerCase())
+  );
 }
 
 module.exports = { esUrlDashboardPermitida };

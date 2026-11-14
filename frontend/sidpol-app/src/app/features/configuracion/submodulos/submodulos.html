@@ -7,7 +7,8 @@
     [cargando]="cargando()"
     [(busqueda)]="busqueda"
     textoAgregar="Agregar Sub Módulo"
-    (agregar)="abrirAgregar()">
+    (agregar)="abrirAgregar()"
+  >
     <ng-template appCelda="acciones" [appCeldaDe]="filtrados()" let-s>
       <button class="btn-icono" (click)="abrirEditar(s)">
         <i class="fa-solid fa-pen"></i>
@@ -17,31 +18,47 @@
 </div>
 
 @if (modalAbierto()) {
-  <app-modal [titulo]="editando() ? 'Editar submódulos' : 'Agregar submódulos'" (cerrar)="cerrarModal()">
+  <app-modal
+    [titulo]="editando() ? 'Editar submódulos' : 'Agregar submódulos'"
+    (cerrar)="cerrarModal()"
+  >
     @if (estado.general()) {
       <div class="mensaje-error-general">{{ estado.general() }}</div>
     }
 
     <div class="campo">
       <label>Nombre*</label>
-      <input type="text" [(ngModel)]="form.nombre_sm" (ngModelChange)="estado.limpiar('nombre_sm')"
-        [class.input-error]="estado.errores()['nombre_sm']" placeholder="Nombre*"/>
+      <input
+        type="text"
+        [(ngModel)]="form.nombre_sm"
+        (ngModelChange)="estado.limpiar('nombre_sm')"
+        [class.input-error]="estado.errores()['nombre_sm']"
+        placeholder="Nombre*"
+      />
       @if (estado.errores()['nombre_sm']; as error) {
         <span class="mensaje-error">{{ error }}</span>
       }
     </div>
     <div class="campo">
       <label>Descripción*</label>
-      <input type="text" [(ngModel)]="form.descripcion_sm" (ngModelChange)="estado.limpiar('descripcion_sm')"
-        [class.input-error]="estado.errores()['descripcion_sm']" placeholder="Descripción*"/>
+      <input
+        type="text"
+        [(ngModel)]="form.descripcion_sm"
+        (ngModelChange)="estado.limpiar('descripcion_sm')"
+        [class.input-error]="estado.errores()['descripcion_sm']"
+        placeholder="Descripción*"
+      />
       @if (estado.errores()['descripcion_sm']; as error) {
         <span class="mensaje-error">{{ error }}</span>
       }
     </div>
     <div class="campo">
       <label>Módulo*</label>
-      <select [(ngModel)]="form.modulos_id_m" (ngModelChange)="estado.limpiar('modulos_id_m')"
-        [class.input-error]="estado.errores()['modulos_id_m']">
+      <select
+        [(ngModel)]="form.modulos_id_m"
+        (ngModelChange)="estado.limpiar('modulos_id_m')"
+        [class.input-error]="estado.errores()['modulos_id_m']"
+      >
         <option [ngValue]="null">Módulo*</option>
         @for (m of modulos(); track m.id_m) {
           <option [ngValue]="m.id_m">{{ m.nombre_m }}</option>

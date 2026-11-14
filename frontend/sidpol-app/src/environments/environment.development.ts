@@ -2,5 +2,5 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
-  powerBiHosts: ['app.powerbi.com'] as readonly string[]
+  powerBiHosts: ['app.powerbi.com'] as readonly string[],
 };

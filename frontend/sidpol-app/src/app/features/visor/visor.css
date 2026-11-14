@@ -14,7 +14,7 @@
   padding: 12px 24px;
   background: #fff;
   border-bottom: 1px solid #e8f0e8;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   flex-wrap: wrap;
   gap: 12px;
   margin-right: 25px;
@@ -110,7 +110,9 @@
   font-weight: 600;
   color: #1a2e1a;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   border-left: 3px solid transparent;
 }
 

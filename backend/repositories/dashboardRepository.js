@@ -8,7 +8,6 @@ const SELECT_DASHBOARDS = `
     LEFT JOIN modulos m ON s.modulos_id_m = m.id_m`;
 
 const dashboardRepository = {
-
   /**
    * Filtros opcionales:
    *  - idSubmodulo: solo los de ese submódulo.
@@ -27,7 +26,7 @@ const dashboardRepository = {
     }
     const where = condiciones.length ? ` WHERE ${condiciones.join(' AND ')}` : '';
     const { rows } = await ejecutor.query(`${SELECT_DASHBOARDS}${where} ORDER BY d.id_d`, params);
-    return rows.map(row => new Dashboard(row));
+    return rows.map((row) => new Dashboard(row));
   },
 
   async obtener(id, ejecutor = db) {
@@ -38,7 +37,7 @@ const dashboardRepository = {
   async insertar({ nombre_d, link_d, submodulos_id_sm, paginas }, ejecutor = db) {
     const { rows } = await ejecutor.query(
       'INSERT INTO dashboards (nombre_d, link_d, submodulos_id_sm, paginas) VALUES ($1, $2, $3, $4) RETURNING *',
-      [nombre_d, link_d, submodulos_id_sm, JSON.stringify(paginas || [])]
+      [nombre_d, link_d, submodulos_id_sm, JSON.stringify(paginas || [])],
     );
     return new Dashboard(rows[0]);
   },
@@ -46,11 +45,10 @@ const dashboardRepository = {
   async actualizar(id, { nombre_d, link_d, submodulos_id_sm, paginas }, ejecutor = db) {
     const { rows } = await ejecutor.query(
       'UPDATE dashboards SET nombre_d=$1, link_d=$2, submodulos_id_sm=$3, paginas=$4 WHERE id_d=$5 RETURNING *',
-      [nombre_d, link_d, submodulos_id_sm, JSON.stringify(paginas || []), id]
+      [nombre_d, link_d, submodulos_id_sm, JSON.stringify(paginas || []), id],
     );
     return rows.length ? new Dashboard(rows[0]) : null;
-  }
-
+  },
 };
 
 module.exports = dashboardRepository;

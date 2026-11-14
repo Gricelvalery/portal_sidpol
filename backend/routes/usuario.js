@@ -7,7 +7,7 @@ const {
   crearUsuarioValidator,
   actualizarUsuarioValidator,
   idUsuarioValidator,
-  permisosValidator
+  permisosValidator,
 } = require('../validators/usuarioValidator');
 
 // Solo un admin gestiona usuarios, roles y permisos

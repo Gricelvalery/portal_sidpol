@@ -14,15 +14,24 @@ export function proveedoresHttp(): (Provider | EnvironmentProviders)[] {
   return [
     provideRouter([]),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
-    provideHttpClientTesting()
+    provideHttpClientTesting(),
   ];
 }
 
 export function usuarioDePrueba(campos: Partial<Usuario> = {}): Usuario {
   return {
-    id_u: 1, nombres_u: 'Gricel', apellido_paterno_u: 'Mucha', apellido_materno_u: 'Diaz',
-    username: 'gricel.mucha', correo_u: 'gricel.mucha@sidpol.pe', rol_u: 'admin', autorizado: true,
-    id_posicion: 1, nombre_posicion: 'Analista', nombre_area: 'DIRTIC', ...campos
+    id_u: 1,
+    nombres_u: 'Gricel',
+    apellido_paterno_u: 'Mucha',
+    apellido_materno_u: 'Diaz',
+    username: 'gricel.mucha',
+    correo_u: 'gricel.mucha@sidpol.pe',
+    rol_u: 'admin',
+    autorizado: true,
+    id_posicion: 1,
+    nombre_posicion: 'Analista',
+    nombre_area: 'DIRTIC',
+    ...campos,
   };
 }
 

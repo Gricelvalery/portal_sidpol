@@ -1,7 +1,6 @@
 const moduloService = require('../services/moduloService');
 
 const moduloController = {
-
   async listar(req, res) {
     res.json(await moduloService.listar(req.usuario));
   },
@@ -12,8 +11,7 @@ const moduloController = {
 
   async actualizar(req, res) {
     res.json(await moduloService.actualizar(req.params.id, req.body));
-  }
-
+  },
 };
 
 module.exports = moduloController;

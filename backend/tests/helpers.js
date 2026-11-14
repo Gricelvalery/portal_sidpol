@@ -5,7 +5,9 @@ const Usuario = require('../models/Usuario');
 /** Header Authorization con un JWT válido (o con las opciones que se pasen). */
 function tokenDe(id, rol = 'user', opciones = {}) {
   const { secreto = env.JWT_SECRET, ...firma } = opciones;
-  return 'Bearer ' + jwt.sign({ id, rol }, secreto, { algorithm: 'HS256', expiresIn: '5m', ...firma });
+  return (
+    'Bearer ' + jwt.sign({ id, rol }, secreto, { algorithm: 'HS256', expiresIn: '5m', ...firma })
+  );
 }
 
 /**
@@ -32,7 +34,7 @@ function usuarioDe(campos = {}) {
     autorizado: true,
     id_posicion: 1,
     contrasenia_u: 'NO-DEBE-SALIR',
-    ...campos
+    ...campos,
   });
 }
 
@@ -40,7 +42,10 @@ function usuarioDe(campos = {}) {
 function silenciarConsola() {
   const error = jest.spyOn(console, 'error').mockImplementation(() => {});
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-  return () => { error.mockRestore(); warn.mockRestore(); };
+  return () => {
+    error.mockRestore();
+    warn.mockRestore();
+  };
 }
 
 module.exports = { tokenDe, configurarSesiones, usuarioDe, silenciarConsola };

@@ -23,7 +23,9 @@
   word-break: break-word;
 }
 
-.verde { color: #1a6b30; }
+.verde {
+  color: #1a6b30;
+}
 
 .hero-imagen {
   flex: 0 1 420px;
@@ -48,10 +50,17 @@
     padding-top: 40px;
     padding-bottom: 40px;
   }
-  .hero-imagen { flex: 0 0 auto; width: 100%; }
-  .hero-imagen img { max-width: 60vw; }
+  .hero-imagen {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  .hero-imagen img {
+    max-width: 60vw;
+  }
 }
 
 @media (max-width: 480px) {
-  .hero-imagen img { max-width: 75vw; }
+  .hero-imagen img {
+    max-width: 75vw;
+  }
 }

@@ -2,7 +2,7 @@
 export function filtrarPorTexto<T>(
   lista: readonly T[],
   texto: string,
-  campos: (fila: T) => readonly (string | null | undefined)[]
+  campos: (fila: T) => readonly (string | null | undefined)[],
 ): T[] {
   const q = texto.toLowerCase();
   if (!q) return [...lista];

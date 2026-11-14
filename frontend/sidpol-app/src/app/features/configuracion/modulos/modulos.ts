@@ -1,11 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AreaService } from '../../../core/api/area.service';
 import { ModuloService } from '../../../core/api/modulo.service';
 import { Area, Modulo, ModuloPayload } from '../../../core/models';
 import { NotificacionService } from '../../../core/notificaciones/notificacion.service';
-import { CeldaTabla, ColumnaTabla, DataTable } from '../../../shared/components/data-table/data-table';
+import {
+  CeldaTabla,
+  ColumnaTabla,
+  DataTable,
+} from '../../../shared/components/data-table/data-table';
 import { Modal } from '../../../shared/components/modal/modal';
 import { filtrarPorTexto } from '../../../shared/utils/busqueda';
 import { EstadoFormulario } from '../../../shared/utils/estado-formulario';
@@ -15,7 +26,7 @@ import { EstadoFormulario } from '../../../shared/utils/estado-formulario';
   imports: [FormsModule, DataTable, CeldaTabla, Modal],
   templateUrl: './modulos.html',
   styleUrls: ['../../../shared/styles/crud.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Modulos implements OnInit {
   private readonly moduloService = inject(ModuloService);
@@ -27,13 +38,14 @@ export class Modulos implements OnInit {
   protected readonly cargando = signal(true);
   protected readonly busqueda = signal('');
   protected readonly filtrados = computed(() =>
-    filtrarPorTexto(this.modulos(), this.busqueda(), (m) => [m.nombre_m, m.descripcion_m]));
+    filtrarPorTexto(this.modulos(), this.busqueda(), (m) => [m.nombre_m, m.descripcion_m]),
+  );
 
   protected readonly columnas: ColumnaTabla<Modulo>[] = [
     { titulo: 'Nombre', valor: (m) => m.nombre_m },
     { titulo: 'Descripción', valor: (m) => m.descripcion_m },
     { titulo: 'Área', valor: (m) => m.nombre_area, siVacio: '—' },
-    { titulo: 'Acciones', celda: 'acciones' }
+    { titulo: 'Acciones', celda: 'acciones' },
   ];
 
   protected readonly modalAbierto = signal(false);
@@ -52,7 +64,7 @@ export class Modulos implements OnInit {
         this.areas.set(areas);
         this.cargando.set(false);
       },
-      error: () => this.cargando.set(false)
+      error: () => this.cargando.set(false),
     });
   }
 
@@ -79,19 +91,27 @@ export class Modulos implements OnInit {
     const valido = this.estado.validar({
       ...(!this.form.nombre_m.trim() && { nombre_m: 'El nombre es requerido' }),
       ...(!this.form.descripcion_m.trim() && { descripcion_m: 'La descripción es requerida' }),
-      ...(!this.form.id_area && { id_area: 'Selecciona un área' })
+      ...(!this.form.id_area && { id_area: 'Selecciona un área' }),
     });
     if (!valido) return;
 
     const actual = this.editando();
-    const peticion = actual ? this.moduloService.editar(actual.id_m, this.form) : this.moduloService.crear(this.form);
+    const peticion = actual
+      ? this.moduloService.editar(actual.id_m, this.form)
+      : this.moduloService.crear(this.form);
     peticion.subscribe({
       next: () => {
         this.cerrarModal();
         this.cargarDatos();
-        this.notificaciones.exito(actual ? 'Modulo actualizado correctamente' : 'Modulo creado correctamente');
+        this.notificaciones.exito(
+          actual ? 'Modulo actualizado correctamente' : 'Modulo creado correctamente',
+        );
       },
-      error: (err: unknown) => this.estado.aplicarRespuesta(err, actual ? 'Error al actualizar modulo' : 'Error al crear modulo')
+      error: (err: unknown) =>
+        this.estado.aplicarRespuesta(
+          err,
+          actual ? 'Error al actualizar modulo' : 'Error al crear modulo',
+        ),
     });
   }
 }

@@ -29,7 +29,10 @@
             @for (columna of columnas(); track columna.titulo) {
               <td [class]="columna.claseCelda ?? ''">
                 @if (columna.celda && plantillas().get(columna.celda); as plantilla) {
-                  <ng-container [ngTemplateOutlet]="plantilla" [ngTemplateOutletContext]="{ $implicit: fila }" />
+                  <ng-container
+                    [ngTemplateOutlet]="plantilla"
+                    [ngTemplateOutletContext]="{ $implicit: fila }"
+                  />
                 } @else {
                   {{ texto(fila, columna) }}
                 }

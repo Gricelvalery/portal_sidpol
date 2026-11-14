@@ -1,7 +1,6 @@
 const usuarioService = require('../services/usuarioService');
 
 const usuarioController = {
-
   async listar(req, res) {
     res.json(await usuarioService.listar());
   },
@@ -28,8 +27,7 @@ const usuarioController = {
   async guardarPermisos(req, res) {
     await usuarioService.guardarPermisos(req.params.id, req.body);
     res.json({ success: true, message: 'Permisos guardados' });
-  }
-
+  },
 };
 
 module.exports = usuarioController;

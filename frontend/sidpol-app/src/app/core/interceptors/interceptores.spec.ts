@@ -38,8 +38,12 @@ describe('interceptores HTTP', () => {
     it('agrega el token SOLO a peticiones de la API', () => {
       http.get(`${API}/modulos`).subscribe();
       http.get('https://otro-servidor.com/datos').subscribe();
-      expect(backend.expectOne(`${API}/modulos`).request.headers.get('Authorization')).toBe('Bearer token-de-prueba');
-      expect(backend.expectOne('https://otro-servidor.com/datos').request.headers.has('Authorization')).toBe(false);
+      expect(backend.expectOne(`${API}/modulos`).request.headers.get('Authorization')).toBe(
+        'Bearer token-de-prueba',
+      );
+      expect(
+        backend.expectOne('https://otro-servidor.com/datos').request.headers.has('Authorization'),
+      ).toBe(false);
     });
 
     it('sin sesión no agrega el header', () => {
@@ -63,7 +67,9 @@ describe('interceptores HTTP', () => {
     });
 
     it('401 del propio login NO cierra sesión ni muestra toast (lo maneja el formulario)', () => {
-      http.post(`${API}/auth/login`, {}, { context: contextoSilencioso() }).subscribe({ error: () => undefined });
+      http
+        .post(`${API}/auth/login`, {}, { context: contextoSilencioso() })
+        .subscribe({ error: () => undefined });
       backend.expectOne(`${API}/auth/login`).flush({}, { status: 401, statusText: 'x' });
       expect(localStorage.getItem('token')).toBe('token-de-prueba');
       expect(notificaciones.lista()).toEqual([]);
@@ -71,9 +77,13 @@ describe('interceptores HTTP', () => {
 
     it.each([
       [403, {}, MENSAJES_ERROR.permisos],
-      [429, { error: 'Demasiados intentos. Intenta de nuevo en unos minutos.' }, 'Demasiados intentos. Intenta de nuevo en unos minutos.'],
+      [
+        429,
+        { error: 'Demasiados intentos. Intenta de nuevo en unos minutos.' },
+        'Demasiados intentos. Intenta de nuevo en unos minutos.',
+      ],
       [500, { error: 'Error interno' }, MENSAJES_ERROR.interno],
-      [0, {}, MENSAJES_ERROR.conexion]
+      [0, {}, MENSAJES_ERROR.conexion],
     ])('%i → toast', (status, cuerpo, mensaje) => {
       fallar(`${API}/dashboards`, status, cuerpo);
       expect(notificaciones.lista().map((n) => n.mensaje)).toEqual([mensaje]);

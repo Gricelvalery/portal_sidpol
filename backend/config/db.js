@@ -7,7 +7,7 @@ const db = new Pool({
   user: env.DB_USER,
   password: env.DB_PASSWORD,
   database: env.DB_NAME,
-  ssl: { rejectUnauthorized: false } // TODO (S8): usar el certificado CA de Supabase
+  ssl: { rejectUnauthorized: false }, // TODO (S8): usar el certificado CA de Supabase
 });
 
 // Un cliente inactivo que se cae no debe tumbar el proceso

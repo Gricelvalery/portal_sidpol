@@ -7,6 +7,12 @@ const { moduloValidator, moduloActualizarValidator } = require('../validators/ca
 
 router.get('/', verificarToken, moduloController.listar);
 router.post('/', verificarToken, checkRole('admin'), moduloValidator, moduloController.crear);
-router.put('/:id', verificarToken, checkRole('admin'), moduloActualizarValidator, moduloController.actualizar);
+router.put(
+  '/:id',
+  verificarToken,
+  checkRole('admin'),
+  moduloActualizarValidator,
+  moduloController.actualizar,
+);
 
 module.exports = router;

@@ -6,18 +6,23 @@ const SECCION_VALIDA = /^[A-Za-z0-9_-]{1,100}$/;
  * Lista permitida para el iframe del visor: solo https y hosts de Power BI
  * (environment.powerBiHosts). El backend aplica la misma regla al guardar el link.
  */
-export function esUrlDashboardPermitida(valor: string, hosts: readonly string[] = environment.powerBiHosts): boolean {
+export function esUrlDashboardPermitida(
+  valor: string,
+  hosts: readonly string[] = environment.powerBiHosts,
+): boolean {
   let url: URL;
   try {
     url = new URL(valor);
   } catch {
     return false;
   }
-  return url.protocol === 'https:'
-    && url.port === ''
-    && !url.username
-    && !url.password
-    && hosts.includes(url.hostname.toLowerCase());
+  return (
+    url.protocol === 'https:' &&
+    url.port === '' &&
+    !url.username &&
+    !url.password &&
+    hosts.includes(url.hostname.toLowerCase())
+  );
 }
 
 /**

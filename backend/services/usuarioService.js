@@ -30,7 +30,7 @@ async function bloquearObjetivo(client, id) {
   const admins = await usuarioRepository.bloquearAdminsAutorizados(client);
   const objetivo = await usuarioRepository.obtenerEstado(id, client, { bloquear: true });
   if (!objetivo) throw AppError.notFound('Usuario no encontrado');
-  return { objetivo, otrosAdmins: admins.filter(a => a !== objetivo.id).length };
+  return { objetivo, otrosAdmins: admins.filter((a) => a !== objetivo.id).length };
 }
 
 async function exigirUsuario(id) {
@@ -40,14 +40,20 @@ async function exigirUsuario(id) {
 }
 
 const usuarioService = {
-
   listar() {
     return usuarioRepository.listar();
   },
 
   // Todo usuario nuevo nace con rol 'user' y sin permisos.
   async crear(datos) {
-    const { nombres_u, apellido_paterno_u, apellido_materno_u, contrasenia_u, id_posicion, autorizado } = datos;
+    const {
+      nombres_u,
+      apellido_paterno_u,
+      apellido_materno_u,
+      contrasenia_u,
+      id_posicion,
+      autorizado,
+    } = datos;
     const hash = await bcrypt.hash(contrasenia_u, env.BCRYPT_COST);
 
     // Si otro admin crea el mismo username en paralelo, el UNIQUE lo rechaza (23505) y se reintenta.
@@ -63,7 +69,7 @@ const usuarioService = {
           rol_u: 'user',
           id_posicion,
           username,
-          autorizado: autorizado === true
+          autorizado: autorizado === true,
         });
       } catch (err) {
         if (err.code !== '23505') throw err;
@@ -74,7 +80,8 @@ const usuarioService = {
 
   // El username y el correo NO cambian al editar el nombre.
   async actualizar(id, datos, actor) {
-    const { nombres_u, apellido_paterno_u, apellido_materno_u, rol_u, id_posicion, autorizado } = datos;
+    const { nombres_u, apellido_paterno_u, apellido_materno_u, rol_u, id_posicion, autorizado } =
+      datos;
 
     return withTransaction(async (client) => {
       const { objetivo, otrosAdmins } = await bloquearObjetivo(client, id);
@@ -89,10 +96,18 @@ const usuarioService = {
         }
       }
 
-      return usuarioRepository.actualizar(id, {
-        nombres_u, apellido_paterno_u, apellido_materno_u: apellido_materno_u || null,
-        rol_u, id_posicion, autorizado
-      }, client);
+      return usuarioRepository.actualizar(
+        id,
+        {
+          nombres_u,
+          apellido_paterno_u,
+          apellido_materno_u: apellido_materno_u || null,
+          rol_u,
+          id_posicion,
+          autorizado,
+        },
+        client,
+      );
     });
   },
 
@@ -128,8 +143,7 @@ const usuarioService = {
     // Borrar + insertar: todo o nada
     await withTransaction((client) => permisoRepository.reemplazar(id, subs, dashs, client));
     return true;
-  }
-
+  },
 };
 
 module.exports = usuarioService;

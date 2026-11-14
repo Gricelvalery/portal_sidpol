@@ -1,5 +1,14 @@
 import {
-  ChangeDetectionStrategy, Component, Directive, TemplateRef, computed, contentChildren, inject, input, model, output
+  ChangeDetectionStrategy,
+  Component,
+  Directive,
+  TemplateRef,
+  computed,
+  contentChildren,
+  inject,
+  input,
+  model,
+  output,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
@@ -41,7 +50,7 @@ export class CeldaTabla<T> {
   imports: [NgTemplateOutlet],
   templateUrl: './data-table.html',
   styleUrls: ['../../styles/crud.css', './data-table.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataTable<T> {
   readonly columnas = input.required<readonly ColumnaTabla<T>[]>();
@@ -54,13 +63,14 @@ export class DataTable<T> {
   private readonly celdas = contentChildren(CeldaTabla);
   protected readonly plantillas = computed(() => {
     const mapa = new Map<string, TemplateRef<{ $implicit: T }>>();
-    for (const c of this.celdas()) mapa.set(c.appCelda(), c.plantilla as TemplateRef<{ $implicit: T }>);
+    for (const c of this.celdas())
+      mapa.set(c.appCelda(), c.plantilla as TemplateRef<{ $implicit: T }>);
     return mapa;
   });
 
   protected texto(fila: T, columna: ColumnaTabla<T>): string | number | null | undefined {
     const valor = columna.valor?.(fila);
-    return columna.siVacio !== undefined ? (valor || columna.siVacio) : valor;
+    return columna.siVacio !== undefined ? valor || columna.siVacio : valor;
   }
 
   protected alBuscar(evento: Event): void {

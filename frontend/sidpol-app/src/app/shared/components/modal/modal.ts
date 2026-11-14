@@ -14,12 +14,14 @@ export type VarianteModal = 'normal' | 'small' | 'permisos';
   selector: 'app-modal',
   template: `
     <div class="modal-overlay" (click)="alClickFuera()"></div>
-    <div class="modal"
-         role="dialog"
-         aria-modal="true"
-         [attr.aria-label]="titulo()"
-         [class.modal-small]="variante() === 'small'"
-         [class.modal-permisos]="variante() === 'permisos'">
+    <div
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="titulo()"
+      [class.modal-small]="variante() === 'small'"
+      [class.modal-permisos]="variante() === 'permisos'"
+    >
       <h3 class="modal-titulo">{{ titulo() }}</h3>
       <ng-content />
       <div class="modal-acciones">
@@ -29,7 +31,7 @@ export type VarianteModal = 'normal' | 'small' | 'permisos';
   `,
   styleUrls: ['../../styles/crud.css'],
   styles: [':host { display: contents; }'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Modal {
   readonly titulo = input('');

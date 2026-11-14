@@ -18,7 +18,9 @@ function texto(nombre, { obligatoria = true, porDefecto } = {}) {
 }
 
 function entero(nombre, { porDefecto, min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
-  const crudo = texto(nombre, { porDefecto: porDefecto === undefined ? undefined : String(porDefecto) });
+  const crudo = texto(nombre, {
+    porDefecto: porDefecto === undefined ? undefined : String(porDefecto),
+  });
   const n = Number(crudo);
   if (crudo !== undefined && (!Number.isInteger(n) || n < min || n > max)) {
     errores.push(`${nombre} debe ser un entero entre ${min} y ${max}`);
@@ -38,20 +40,27 @@ if (!/^\d+[smhd]$/.test(JWT_EXPIRES_IN)) {
 
 const CORS_ORIGIN = (texto('CORS_ORIGIN') || '')
   .split(',')
-  .map(o => o.trim())
+  .map((o) => o.trim())
   .filter(Boolean);
 for (const origen of CORS_ORIGIN) {
   let valido = false;
-  try { valido = new URL(origen).origin === origen; } catch { /* inválido */ }
-  if (!valido) errores.push('CORS_ORIGIN contiene un origen inválido (formato: http://host:puerto, sin "/" final)');
+  try {
+    valido = new URL(origen).origin === origen;
+  } catch {
+    /* inválido */
+  }
+  if (!valido)
+    errores.push(
+      'CORS_ORIGIN contiene un origen inválido (formato: http://host:puerto, sin "/" final)',
+    );
 }
 
 // Dominios permitidos para los links de dashboards (iframe del visor)
-const POWERBI_HOSTS = (texto('POWERBI_HOSTS', { porDefecto: 'app.powerbi.com' }))
+const POWERBI_HOSTS = texto('POWERBI_HOSTS', { porDefecto: 'app.powerbi.com' })
   .split(',')
-  .map(h => h.trim().toLowerCase())
+  .map((h) => h.trim().toLowerCase())
   .filter(Boolean);
-if (POWERBI_HOSTS.length === 0 || POWERBI_HOSTS.some(h => !/^[a-z0-9.-]+$/.test(h))) {
+if (POWERBI_HOSTS.length === 0 || POWERBI_HOSTS.some((h) => !/^[a-z0-9.-]+$/.test(h))) {
   errores.push('POWERBI_HOSTS debe ser una lista de dominios separados por coma');
 }
 
@@ -78,7 +87,7 @@ const env = {
   TRUST_PROXY,
   RATE_LIMIT_API: entero('RATE_LIMIT_API', { porDefecto: 500 }),
   RATE_LIMIT_LOGIN: entero('RATE_LIMIT_LOGIN', { porDefecto: 5, max: 100 }),
-  BCRYPT_COST: entero('BCRYPT_COST', { porDefecto: 12, min: 4, max: 15 })
+  BCRYPT_COST: entero('BCRYPT_COST', { porDefecto: 12, min: 4, max: 15 }),
 };
 
 if (env.NODE_ENV === 'production' && env.BCRYPT_COST < 12) {

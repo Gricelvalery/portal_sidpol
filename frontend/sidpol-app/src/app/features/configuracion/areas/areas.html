@@ -6,7 +6,8 @@
     [cargando]="cargando()"
     [(busqueda)]="busqueda"
     textoAgregar="Agregar Dependencia"
-    (agregar)="abrirAgregar()">
+    (agregar)="abrirAgregar()"
+  >
     <ng-template appCelda="acciones" [appCeldaDe]="filtradas()" let-a>
       <button class="btn-icono" (click)="abrirEditar(a)">
         <i class="fa-solid fa-pen"></i>
@@ -23,16 +24,26 @@
 
     <div class="campo">
       <label>Nombre*</label>
-      <input type="text" [(ngModel)]="form.nombre_area" (ngModelChange)="estado.limpiar('nombre_area')"
-        [class.input-error]="estado.errores()['nombre_area']" placeholder="Nombre*"/>
+      <input
+        type="text"
+        [(ngModel)]="form.nombre_area"
+        (ngModelChange)="estado.limpiar('nombre_area')"
+        [class.input-error]="estado.errores()['nombre_area']"
+        placeholder="Nombre*"
+      />
       @if (estado.errores()['nombre_area']; as error) {
         <span class="mensaje-error">{{ error }}</span>
       }
     </div>
     <div class="campo">
       <label>Descripción*</label>
-      <input type="text" [(ngModel)]="form.descripcion_area" (ngModelChange)="estado.limpiar('descripcion_area')"
-        [class.input-error]="estado.errores()['descripcion_area']" placeholder="Descripción*"/>
+      <input
+        type="text"
+        [(ngModel)]="form.descripcion_area"
+        (ngModelChange)="estado.limpiar('descripcion_area')"
+        [class.input-error]="estado.errores()['descripcion_area']"
+        placeholder="Descripción*"
+      />
       @if (estado.errores()['descripcion_area']; as error) {
         <span class="mensaje-error">{{ error }}</span>
       }

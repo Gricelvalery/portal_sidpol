@@ -1,9 +1,8 @@
 <div class="login-wrapper">
   <div class="login-card">
-
     <div class="logo-area">
       <div class="logo-circle">
-        <img src="assets/img/logo.png"/>
+        <img src="assets/img/logo.png" />
       </div>
     </div>
 
@@ -11,9 +10,7 @@
     <p class="subtitle">SIDPOL 360 – Inteligencia Policial</p>
 
     @if (errorMsg()) {
-      <div class="error-msg">
-        <i class="fa-solid fa-circle-xmark"></i> {{ errorMsg() }}
-      </div>
+      <div class="error-msg"><i class="fa-solid fa-circle-xmark"></i> {{ errorMsg() }}</div>
     }
 
     <div class="form-group" [class.input-error]="errorUsername()">
@@ -25,7 +22,8 @@
         [(ngModel)]="username"
         placeholder="Ingrese su usuario"
         (keyup.enter)="iniciarSesion()"
-        (ngModelChange)="alEscribirUsuario()"/>
+        (ngModelChange)="alEscribirUsuario()"
+      />
     </div>
     @if (errorUsername()) {
       <p class="campo-error">
@@ -42,7 +40,8 @@
         [(ngModel)]="contrasenia"
         placeholder="Ingrese su contraseña"
         (keyup.enter)="iniciarSesion()"
-        (ngModelChange)="alEscribirContrasenia()"/>
+        (ngModelChange)="alEscribirContrasenia()"
+      />
       <span class="toggle-pass" (click)="togglePass()">
         <i [class]="mostrarPass() ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye'"></i>
       </span>
@@ -54,9 +53,12 @@
     }
 
     <button class="btn-ingresar" (click)="iniciarSesion()" [disabled]="loading()">
-      @if (!loading()) { INGRESAR }
-      @if (loading()) { <span class="loader"></span> }
+      @if (!loading()) {
+        INGRESAR
+      }
+      @if (loading()) {
+        <span class="loader"></span>
+      }
     </button>
-
   </div>
 </div>

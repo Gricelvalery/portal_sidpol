@@ -20,10 +20,16 @@ describe('Login', () => {
     return fixture;
   };
 
-  const ingresar = async (fixture: Awaited<ReturnType<typeof montar>>, usuario: string, clave: string) => {
+  const ingresar = async (
+    fixture: Awaited<ReturnType<typeof montar>>,
+    usuario: string,
+    clave: string,
+  ) => {
     fixture.componentInstance.username = usuario;
     fixture.componentInstance.contrasenia = clave;
-    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.btn-ingresar')!.click();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.btn-ingresar')!
+      .click();
     await fixture.whenStable();
   };
 
@@ -35,7 +41,9 @@ describe('Login', () => {
   it('campos vacíos → mensajes de validación, sin llamar a la API', async () => {
     const fixture = await montar();
     await ingresar(fixture, '', '');
-    const errores = [...(fixture.nativeElement as HTMLElement).querySelectorAll('.campo-error')].map((p) => p.textContent?.trim());
+    const errores = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll('.campo-error'),
+    ].map((p) => p.textContent?.trim());
     expect(errores).toEqual(['El usuario es obligatorio', 'La contraseña es obligatoria']);
     backend.expectNone(`${API}/auth/login`);
   });
@@ -44,13 +52,15 @@ describe('Login', () => {
     [401, 'Usuario o contraseña incorrectos.'],
     [403, 'Usuario no autorizado. Contacte al administrador.'],
     [429, 'Demasiados intentos. Espera unos minutos e intenta de nuevo.'],
-    [0, 'Error de conexión. Intente nuevamente.']
+    [0, 'Error de conexión. Intente nuevamente.'],
   ])('error %i → mensaje en el formulario (no toast)', async (status, mensaje) => {
     const fixture = await montar();
     await ingresar(fixture, 'gricel.mucha', 'mala');
     backend.expectOne(`${API}/auth/login`).flush({}, { status, statusText: 'x' });
     await fixture.whenStable();
-    expect((fixture.nativeElement as HTMLElement).querySelector('.error-msg')?.textContent).toContain(mensaje);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.error-msg')?.textContent,
+    ).toContain(mensaje);
     expect(TestBed.inject(NotificacionService).lista()).toEqual([]);
   });
 
@@ -60,7 +70,9 @@ describe('Login', () => {
     // Sin whenStable() mientras los temporizadores son falsos (esperaría para siempre)
     fixture.componentInstance.username = 'gricel.mucha';
     fixture.componentInstance.contrasenia = 'mala';
-    (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.btn-ingresar')!.click();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('.btn-ingresar')!
+      .click();
     backend.expectOne(`${API}/auth/login`).flush({}, { status: 401, statusText: 'x' });
     expect(fixture.componentInstance['errorMsg']()).toBe('Usuario o contraseña incorrectos.');
 
@@ -75,7 +87,9 @@ describe('Login', () => {
   it('login correcto → guarda la sesión y va a /inicio', async () => {
     const fixture = await montar();
     await ingresar(fixture, 'gricel.mucha', 'Secreta123');
-    backend.expectOne(`${API}/auth/login`).flush({ success: true, token: 'jwt', usuario: usuarioDePrueba() });
+    backend
+      .expectOne(`${API}/auth/login`)
+      .flush({ success: true, token: 'jwt', usuario: usuarioDePrueba() });
     expect(localStorage.getItem('token')).toBe('jwt');
     expect(router.navigate).toHaveBeenCalledWith(['/inicio']);
   });

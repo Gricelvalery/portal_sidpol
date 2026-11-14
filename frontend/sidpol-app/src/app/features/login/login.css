@@ -1,4 +1,10 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
   --verde: #1a6b30;
@@ -27,8 +33,14 @@
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-card {
@@ -37,13 +49,17 @@
   padding: 48px 44px 44px;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 8px 40px rgba(26,107,48,0.13), 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow:
+    0 8px 40px rgba(26, 107, 48, 0.13),
+    0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.logo-area { margin-bottom: 20px; }
+.logo-area {
+  margin-bottom: 20px;
+}
 
 .logo-circle {
   width: 100px;
@@ -94,7 +110,9 @@
   font-family: 'Mulish', sans-serif;
   color: var(--texto);
   outline: none;
-  transition: border-color 0.25s, background 0.25s;
+  transition:
+    border-color 0.25s,
+    background 0.25s;
   -webkit-box-shadow: 0 0 0px 1000px #f0f0f0 inset;
   box-shadow: 0 0 0px 1000px #f0f0f0 inset;
 }
@@ -106,7 +124,9 @@
   box-shadow: 0 0 0px 1000px #fff inset;
 }
 
-.form-group input::placeholder { color: #aaa; }
+.form-group input::placeholder {
+  color: #aaa;
+}
 
 .input-icon {
   position: absolute;
@@ -149,8 +169,14 @@
 }
 
 @keyframes slideIn {
-  from { transform: translateY(-6px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .btn-ingresar {
@@ -165,12 +191,14 @@
   font-weight: 700;
   letter-spacing: 1.5px;
   cursor: pointer;
-  transition: background 0.25s, transform 0.15s;
+  transition:
+    background 0.25s,
+    transform 0.15s;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 8px;
-  box-shadow: 0 4px 16px rgba(26,107,48,0.35);
+  box-shadow: 0 4px 16px rgba(26, 107, 48, 0.35);
 }
 
 .btn-ingresar:hover {
@@ -186,18 +214,22 @@
 .loader {
   width: 18px;
   height: 18px;
-  border: 3px solid rgba(255,255,255,0.4);
+  border: 3px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   display: inline-block;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .input-error {
   border-color: #c0392b !important;
-  box-shadow: 0 0 0 2px rgba(192,57,43,0.15);
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.15);
   border-radius: 30px;
 }
 
@@ -239,6 +271,12 @@
 }
 
 @keyframes slideIn {
-  from { transform: translateY(-6px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+  from {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

@@ -20,13 +20,13 @@ app.use(express.json({ limit: '100kb' }));
 app.use('/api', limiterApi);
 
 // rutas
-app.use('/api/auth',       require('./routes/auth'));
-app.use('/api/usuario',    require('./routes/usuario'));
-app.use('/api/modulos',    require('./routes/modulos'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/usuario', require('./routes/usuario'));
+app.use('/api/modulos', require('./routes/modulos'));
 app.use('/api/submodulos', require('./routes/submodulos'));
 app.use('/api/dashboards', require('./routes/dashboards'));
-app.use('/api/area',       require('./routes/area'));
-app.use('/api/posicion',   require('./routes/posicion'));
+app.use('/api/area', require('./routes/area'));
+app.use('/api/posicion', require('./routes/posicion'));
 
 // 404 en JSON y manejo centralizado de errores (deben ir al final)
 app.use(notFound);

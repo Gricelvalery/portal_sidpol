@@ -14,7 +14,14 @@ describe('Submodulos', () => {
     await fixture.whenStable();
 
     backend.expectOne(`${API}/submodulos`).flush([
-      { id_sm: 6, nombre_sm: 'Tendencias', descripcion_sm: 'Delitos', modulos_id_m: 3, nombre_m: 'Ánalisis', ruta: 'visor/6' }
+      {
+        id_sm: 6,
+        nombre_sm: 'Tendencias',
+        descripcion_sm: 'Delitos',
+        modulos_id_m: 3,
+        nombre_m: 'Ánalisis',
+        ruta: 'visor/6',
+      },
     ]);
     const el = fixture.nativeElement as HTMLElement;
     await fixture.whenStable();

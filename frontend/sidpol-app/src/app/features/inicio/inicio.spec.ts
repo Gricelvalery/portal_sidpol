@@ -18,12 +18,18 @@ describe('Inicio', () => {
     const { fixture, backend } = await montar('user');
     backend.expectOne(`${API}/submodulos`).flush([]);
     await fixture.whenStable();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Aún no tienes accesos asignados. Contacta al administrador.');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'Aún no tienes accesos asignados. Contacta al administrador.',
+    );
   });
 
   it('user con accesos → sin aviso', async () => {
     const { fixture, backend } = await montar('user');
-    backend.expectOne(`${API}/submodulos`).flush([{ id_sm: 6, nombre_sm: 'T', descripcion_sm: null, modulos_id_m: 3, ruta: 'visor/6' }]);
+    backend
+      .expectOne(`${API}/submodulos`)
+      .flush([
+        { id_sm: 6, nombre_sm: 'T', descripcion_sm: null, modulos_id_m: 3, ruta: 'visor/6' },
+      ]);
     await fixture.whenStable();
     expect((fixture.nativeElement as HTMLElement).querySelector('app-sin-accesos')).toBeNull();
   });

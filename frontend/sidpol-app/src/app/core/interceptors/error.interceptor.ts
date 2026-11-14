@@ -12,7 +12,7 @@ export const MENSAJES_ERROR = {
   permisos: 'No tienes permisos para esta acción.',
   limite: 'Demasiadas peticiones. Intenta de nuevo en unos minutos.',
   conexion: 'No se pudo conectar con el servidor.',
-  interno: 'Ocurrió un error interno. Intenta de nuevo.'
+  interno: 'Ocurrió un error interno. Intenta de nuevo.',
 } as const;
 
 const esLogin = (url: string) => url.endsWith('/auth/login');
@@ -54,6 +54,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         notificaciones.error(MENSAJES_ERROR.interno);
       }
       return throwError(() => err);
-    })
+    }),
   );
 };

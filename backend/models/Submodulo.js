@@ -15,7 +15,7 @@ class Submodulo {
       descripcion_sm: this.descripcion,
       modulos_id_m: this.idModulo,
       nombre_m: this.nombreModulo,
-      ruta: this.ruta
+      ruta: this.ruta,
     };
   }
 }

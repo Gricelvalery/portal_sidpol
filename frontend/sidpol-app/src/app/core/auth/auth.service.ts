@@ -33,7 +33,11 @@ export class AuthService {
   /** Los errores del login los muestra el formulario, no un toast. */
   login(username: string, contrasenia: string): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, { username, contrasenia }, { context: contextoSilencioso() })
+      .post<LoginResponse>(
+        `${environment.apiUrl}/auth/login`,
+        { username, contrasenia },
+        { context: contextoSilencioso() },
+      )
       .pipe(tap((resp) => this.guardarSesion(resp)));
   }
 

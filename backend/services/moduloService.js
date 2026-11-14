@@ -3,7 +3,6 @@ const moduloRepository = require('../repositories/moduloRepository');
 const permisoService = require('./permisoService');
 
 const moduloService = {
-
   // Admin ve todo; user solo los módulos que contienen algún submódulo accesible.
   async listar(usuario) {
     const accesos = await permisoService.accesosDe(usuario);
@@ -19,8 +18,7 @@ const moduloService = {
     const modulo = await moduloRepository.actualizar(id, datos);
     if (!modulo) throw AppError.notFound('Módulo no encontrado');
     return modulo;
-  }
-
+  },
 };
 
 module.exports = moduloService;

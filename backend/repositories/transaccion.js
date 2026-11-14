@@ -13,7 +13,11 @@ async function withTransaction(fn) {
     await client.query('COMMIT');
     return resultado;
   } catch (err) {
-    try { await client.query('ROLLBACK'); } catch { /* la conexión pudo haberse caído */ }
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      /* la conexión pudo haberse caído */
+    }
     throw err;
   } finally {
     client.release();

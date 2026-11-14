@@ -7,6 +7,12 @@ const { areaValidator, areaActualizarValidator } = require('../validators/catalo
 
 router.get('/', verificarToken, areaController.listar);
 router.post('/', verificarToken, checkRole('admin'), areaValidator, areaController.crear);
-router.put('/:id', verificarToken, checkRole('admin'), areaActualizarValidator, areaController.actualizar);
+router.put(
+  '/:id',
+  verificarToken,
+  checkRole('admin'),
+  areaActualizarValidator,
+  areaController.actualizar,
+);
 
 module.exports = router;

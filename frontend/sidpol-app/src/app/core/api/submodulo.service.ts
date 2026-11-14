@@ -20,7 +20,9 @@ export class SubmoduloService {
    * se pide en modo silencioso porque el visor muestra su propio aviso.
    */
   dashboards(idSubmodulo: number): Observable<Dashboard[]> {
-    return this.http.get<Dashboard[]>(`${this.url}/${idSubmodulo}/dashboards`, { context: contextoSilencioso() });
+    return this.http.get<Dashboard[]>(`${this.url}/${idSubmodulo}/dashboards`, {
+      context: contextoSilencioso(),
+    });
   }
 
   crear(datos: SubmoduloPayload): Observable<Submodulo> {

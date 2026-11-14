@@ -4,7 +4,7 @@ jest.mock('../repositories/submoduloRepository');
 jest.mock('../repositories/moduloRepository');
 jest.mock('../repositories/dashboardRepository');
 jest.mock('../repositories/transaccion', () => ({
-  withTransaction: jest.fn(async (fn) => fn({ esClienteDeTransaccion: true }))
+  withTransaction: jest.fn(async (fn) => fn({ esClienteDeTransaccion: true })),
 }));
 
 const request = require('supertest');
@@ -20,39 +20,51 @@ const Dashboard = require('../models/Dashboard');
 const { tokenDe, configurarSesiones } = require('./helpers');
 
 const ADMIN = tokenDe(1, 'admin');
-const USER = tokenDe(2, 'user');          // tiene acceso al submódulo 6 y al dashboard 1
-const SIN_PERMISOS = tokenDe(7, 'user');  // no tiene ningún acceso
+const USER = tokenDe(2, 'user'); // tiene acceso al submódulo 6 y al dashboard 1
+const SIN_PERMISOS = tokenDe(7, 'user'); // no tiene ningún acceso
 const CLIENTE = { esClienteDeTransaccion: true };
 
 const get = (url, token) => request(app).get(url).set('Authorization', token);
 
 beforeEach(() => {
-  configurarSesiones(usuarioRepository, { 1: { rol: 'admin' }, 2: { rol: 'user' }, 7: { rol: 'user' } });
+  configurarSesiones(usuarioRepository, {
+    1: { rol: 'admin' },
+    2: { rol: 'user' },
+    7: { rol: 'user' },
+  });
   permisoRepository.accesos.mockImplementation(async (id) =>
-    id === 2 ? { submodulos: [6], dashboards: [1] } : { submodulos: [], dashboards: [] });
-  permisoRepository.tieneAcceso.mockImplementation(async (id, tipo, recurso) =>
-    id === 2 && ((tipo === 'submodulo' && recurso === 6) || (tipo === 'dashboard' && recurso === 1)));
+    id === 2 ? { submodulos: [6], dashboards: [1] } : { submodulos: [], dashboards: [] },
+  );
+  permisoRepository.tieneAcceso.mockImplementation(
+    async (id, tipo, recurso) =>
+      id === 2 &&
+      ((tipo === 'submodulo' && recurso === 6) || (tipo === 'dashboard' && recurso === 1)),
+  );
   submoduloRepository.listar.mockImplementation(async ({ ids } = {}) =>
-    [6, 7].filter(id => !ids || ids.includes(id)).map(id => new Submodulo({ id_sm: id, nombre_sm: `S${id}` })));
+    [6, 7]
+      .filter((id) => !ids || ids.includes(id))
+      .map((id) => new Submodulo({ id_sm: id, nombre_sm: `S${id}` })),
+  );
   moduloRepository.listar.mockResolvedValue([]);
-  dashboardRepository.listar.mockResolvedValue([new Dashboard({ id_d: 1, nombre_d: 'D1', submodulos_id_sm: 6 })]);
+  dashboardRepository.listar.mockResolvedValue([
+    new Dashboard({ id_d: 1, nombre_d: 'D1', submodulos_id_sm: 6 }),
+  ]);
   dashboardRepository.obtener.mockResolvedValue(new Dashboard({ id_d: 1, nombre_d: 'D1' }));
   permisoRepository.submodulosDeConfiguracion.mockResolvedValue([]);
 });
 
 describe('listados filtrados por permisos', () => {
-
   test('admin ve todo: el repositorio se llama sin filtro y no se consultan permisos', async () => {
     const res = await get('/api/submodulos', ADMIN);
     expect(res.status).toBe(200);
-    expect(res.body.map(s => s.id_sm)).toEqual([6, 7]);
+    expect(res.body.map((s) => s.id_sm)).toEqual([6, 7]);
     expect(submoduloRepository.listar).toHaveBeenCalledWith();
     expect(permisoRepository.accesos).not.toHaveBeenCalled();
   });
 
   test('user ve solo sus submódulos, módulos y dashboards', async () => {
     const res = await get('/api/submodulos', USER);
-    expect(res.body.map(s => s.id_sm)).toEqual([6]);
+    expect(res.body.map((s) => s.id_sm)).toEqual([6]);
     expect(submoduloRepository.listar).toHaveBeenCalledWith({ ids: [6] });
 
     await get('/api/modulos', USER);
@@ -68,11 +80,9 @@ describe('listados filtrados por permisos', () => {
     expect(res.body).toEqual([]);
     expect(submoduloRepository.listar).toHaveBeenCalledWith({ ids: [] });
   });
-
 });
 
 describe('checkPermission', () => {
-
   test('submódulo propio → 200, solo con sus dashboards', async () => {
     const res = await get('/api/submodulos/6/dashboards', USER);
     expect(res.status).toBe(200);
@@ -110,7 +120,6 @@ describe('checkPermission', () => {
     expect(res.status).toBe(500);
     expect(res.body).toEqual({ error: 'Error interno' });
   });
-
 });
 
 describe('asignar permisos (admin)', () => {
@@ -157,5 +166,4 @@ describe('asignar permisos (admin)', () => {
   test('usuario inexistente → 404', async () => {
     expect((await guardar(99, { dashboards_ids: [1] })).status).toBe(404);
   });
-
 });

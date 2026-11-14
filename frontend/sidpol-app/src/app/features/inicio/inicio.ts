@@ -8,7 +8,7 @@ import { SinAccesos } from '../../shared/components/sin-accesos/sin-accesos';
   imports: [SinAccesos],
   templateUrl: './inicio.html',
   styleUrl: './inicio.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Inicio implements OnInit {
   private readonly auth = inject(AuthService);

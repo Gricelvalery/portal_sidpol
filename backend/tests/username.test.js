@@ -7,14 +7,17 @@ const primeros = (n, ...args) => {
 };
 
 describe('utils/username', () => {
-
   test('primer nombre + "." + apellido paterno, en minúsculas', () => {
     expect(primeros(1, 'Juan Carlos', 'Pérez', 'Cáceres')).toEqual(['juan.perez']);
   });
 
   test('si existe: + inicial del apellido materno, luego números', () => {
-    expect(primeros(4, 'Juan', 'Pérez', 'Cáceres'))
-      .toEqual(['juan.perez', 'juan.perezc', 'juan.perezc2', 'juan.perezc3']);
+    expect(primeros(4, 'Juan', 'Pérez', 'Cáceres')).toEqual([
+      'juan.perez',
+      'juan.perezc',
+      'juan.perezc2',
+      'juan.perezc3',
+    ]);
   });
 
   test('sin apellido materno: directo a los números', () => {
@@ -24,7 +27,10 @@ describe('utils/username', () => {
 
   test('quita tildes, ñ → n y une apellidos compuestos', () => {
     expect(primeros(1, 'Ñuño', 'Muñoz', '')).toEqual(['nuno.munoz']);
-    expect(primeros(2, 'José María', 'De la Cruz', 'Ávila')).toEqual(['jose.delacruz', 'jose.delacruza']);
+    expect(primeros(2, 'José María', 'De la Cruz', 'Ávila')).toEqual([
+      'jose.delacruz',
+      'jose.delacruza',
+    ]);
     expect(primeros(1, 'ÁNGEL', 'GÜEMES', '')).toEqual(['angel.guemes']);
   });
 
@@ -34,11 +40,12 @@ describe('utils/username', () => {
 
   test('sin nombre o sin apellido paterno lanza AppError 400', () => {
     expect(() => primeros(1, '', 'Pérez', '')).toThrow(AppError);
-    expect(() => primeros(1, 'Juan', '   ', '')).toThrow('Nombre y apellido paterno son necesarios');
+    expect(() => primeros(1, 'Juan', '   ', '')).toThrow(
+      'Nombre y apellido paterno son necesarios',
+    );
   });
 
   test('correo = username@sidpol.pe', () => {
     expect(correoDe('juan.perezc2')).toBe('juan.perezc2@sidpol.pe');
   });
-
 });

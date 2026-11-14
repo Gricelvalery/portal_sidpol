@@ -3,7 +3,6 @@ const dashboardRepository = require('../repositories/dashboardRepository');
 const permisoService = require('./permisoService');
 
 const dashboardService = {
-
   // Admin ve todo; user solo los dashboards permitidos.
   async listar(usuario) {
     const accesos = await permisoService.accesosDe(usuario);
@@ -34,8 +33,7 @@ const dashboardService = {
     const dashboard = await dashboardRepository.actualizar(id, datos);
     if (!dashboard) throw AppError.notFound('Dashboard no encontrado');
     return dashboard;
-  }
-
+  },
 };
 
 module.exports = dashboardService;

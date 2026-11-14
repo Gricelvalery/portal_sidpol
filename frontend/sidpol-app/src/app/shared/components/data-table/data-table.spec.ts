@@ -2,25 +2,37 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CeldaTabla, ColumnaTabla, DataTable } from './data-table';
 
-interface Fila { id: number; nombre: string; area: string | null }
+interface Fila {
+  id: number;
+  nombre: string;
+  area: string | null;
+}
 
 @Component({
   imports: [DataTable, CeldaTabla],
-  template: `
-    <app-data-table [columnas]="columnas" [filas]="filas()" [cargando]="cargando()"
-      [(busqueda)]="busqueda" textoAgregar="Agregar Fila" (agregar)="agregadas = agregadas + 1">
-      <ng-template appCelda="acciones" [appCeldaDe]="filas()" let-f>
-        <button class="editar">editar {{ f.id }}</button>
-      </ng-template>
-    </app-data-table>`
+  template: ` <app-data-table
+    [columnas]="columnas"
+    [filas]="filas()"
+    [cargando]="cargando()"
+    [(busqueda)]="busqueda"
+    textoAgregar="Agregar Fila"
+    (agregar)="agregadas = agregadas + 1"
+  >
+    <ng-template appCelda="acciones" [appCeldaDe]="filas()" let-f>
+      <button class="editar">editar {{ f.id }}</button>
+    </ng-template>
+  </app-data-table>`,
 })
 class Anfitrion {
   columnas: ColumnaTabla<Fila>[] = [
     { titulo: 'Nombre', valor: (f) => f.nombre },
     { titulo: 'Área', valor: (f) => f.area, siVacio: '—' },
-    { titulo: 'Acciones', celda: 'acciones', claseCelda: 'acciones' }
+    { titulo: 'Acciones', celda: 'acciones', claseCelda: 'acciones' },
   ];
-  filas = signal<Fila[]>([{ id: 1, nombre: 'Uno', area: 'A' }, { id: 2, nombre: 'Dos', area: null }]);
+  filas = signal<Fila[]>([
+    { id: 1, nombre: 'Uno', area: 'A' },
+    { id: 2, nombre: 'Dos', area: null },
+  ]);
   cargando = signal(false);
   busqueda = signal('');
   agregadas = 0;
@@ -35,9 +47,18 @@ describe('DataTable', () => {
 
   it('dibuja encabezados, celdas, "—" para vacíos y plantillas personalizadas', async () => {
     const { el } = await montar();
-    expect([...el.querySelectorAll('th')].map((th) => th.textContent?.trim())).toEqual(['Nombre', 'Área', 'Acciones']);
-    const filas = [...el.querySelectorAll('tbody tr')].map((tr) => [...tr.querySelectorAll('td')].map((td) => td.textContent?.trim()));
-    expect(filas).toEqual([['Uno', 'A', 'editar 1'], ['Dos', '—', 'editar 2']]);
+    expect([...el.querySelectorAll('th')].map((th) => th.textContent?.trim())).toEqual([
+      'Nombre',
+      'Área',
+      'Acciones',
+    ]);
+    const filas = [...el.querySelectorAll('tbody tr')].map((tr) =>
+      [...tr.querySelectorAll('td')].map((td) => td.textContent?.trim()),
+    );
+    expect(filas).toEqual([
+      ['Uno', 'A', 'editar 1'],
+      ['Dos', '—', 'editar 2'],
+    ]);
     expect(el.querySelector('tbody td:last-child')?.classList).toContain('acciones');
   });
 

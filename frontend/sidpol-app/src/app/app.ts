@@ -7,6 +7,6 @@ import { Toast } from './shared/components/toast/toast';
   imports: [RouterOutlet, Toast],
   templateUrl: './app.html',
   styleUrl: './app.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {}

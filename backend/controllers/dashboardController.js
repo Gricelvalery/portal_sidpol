@@ -1,7 +1,6 @@
 const dashboardService = require('../services/dashboardService');
 
 const dashboardController = {
-
   async listar(req, res) {
     res.json(await dashboardService.listar(req.usuario));
   },
@@ -20,8 +19,7 @@ const dashboardController = {
 
   async actualizar(req, res) {
     res.json(await dashboardService.actualizar(req.params.id, req.body));
-  }
-
+  },
 };
 
 module.exports = dashboardController;

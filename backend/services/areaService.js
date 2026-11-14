@@ -2,7 +2,6 @@ const AppError = require('../utils/AppError');
 const areaRepository = require('../repositories/areaRepository');
 
 const areaService = {
-
   listar() {
     return areaRepository.listar();
   },
@@ -15,8 +14,7 @@ const areaService = {
     const area = await areaRepository.actualizar(id, datos);
     if (!area) throw AppError.notFound('Área no encontrada');
     return area;
-  }
-
+  },
 };
 
 module.exports = areaService;

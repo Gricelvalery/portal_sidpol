@@ -15,7 +15,7 @@ describe('lista permitida del iframe (dashboard-url)', () => {
     ['credenciales en la URL', 'https://user:pass@app.powerbi.com/view'],
     ['puerto distinto', 'https://app.powerbi.com:8443/view'],
     ['javascript:', 'javascript:alert(1)'],
-    ['texto que no es URL', 'no es una url']
+    ['texto que no es URL', 'no es una url'],
   ])('rechaza %s', (_caso, url) => {
     expect(esUrlDashboardPermitida(url)).toBe(false);
   });

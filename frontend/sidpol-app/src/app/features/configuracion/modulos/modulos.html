@@ -7,7 +7,8 @@
     [cargando]="cargando()"
     [(busqueda)]="busqueda"
     textoAgregar="Agregar Módulo"
-    (agregar)="abrirAgregar()">
+    (agregar)="abrirAgregar()"
+  >
     <ng-template appCelda="acciones" [appCeldaDe]="filtrados()" let-m>
       <button class="btn-icono" (click)="abrirEditar(m)">
         <i class="fa-solid fa-pen"></i>
@@ -24,24 +25,37 @@
 
     <div class="campo">
       <label>Nombre*</label>
-      <input type="text" [(ngModel)]="form.nombre_m" (ngModelChange)="estado.limpiar('nombre_m')"
-        [class.input-error]="estado.errores()['nombre_m']" placeholder="Nombre*"/>
+      <input
+        type="text"
+        [(ngModel)]="form.nombre_m"
+        (ngModelChange)="estado.limpiar('nombre_m')"
+        [class.input-error]="estado.errores()['nombre_m']"
+        placeholder="Nombre*"
+      />
       @if (estado.errores()['nombre_m']; as error) {
         <span class="mensaje-error">{{ error }}</span>
       }
     </div>
     <div class="campo">
       <label>Descripción*</label>
-      <input type="text" [(ngModel)]="form.descripcion_m" (ngModelChange)="estado.limpiar('descripcion_m')"
-        [class.input-error]="estado.errores()['descripcion_m']" placeholder="Descripción*"/>
+      <input
+        type="text"
+        [(ngModel)]="form.descripcion_m"
+        (ngModelChange)="estado.limpiar('descripcion_m')"
+        [class.input-error]="estado.errores()['descripcion_m']"
+        placeholder="Descripción*"
+      />
       @if (estado.errores()['descripcion_m']; as error) {
         <span class="mensaje-error">{{ error }}</span>
       }
     </div>
     <div class="campo">
       <label>Área</label>
-      <select [(ngModel)]="form.id_area" (ngModelChange)="estado.limpiar('id_area')"
-        [class.input-error]="estado.errores()['id_area']">
+      <select
+        [(ngModel)]="form.id_area"
+        (ngModelChange)="estado.limpiar('id_area')"
+        [class.input-error]="estado.errores()['id_area']"
+      >
         <option [ngValue]="null">Área</option>
         @for (a of areas(); track a.id_area) {
           <option [ngValue]="a.id_area">{{ a.nombre_area }}</option>

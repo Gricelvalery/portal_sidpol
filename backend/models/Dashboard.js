@@ -17,7 +17,7 @@ class Dashboard {
       submodulos_id_sm: this.idSubmodulo,
       paginas: this.paginas,
       nombre_sm: this.nombreSubmodulo,
-      nombre_m: this.nombreModulo
+      nombre_m: this.nombreModulo,
     };
   }
 }

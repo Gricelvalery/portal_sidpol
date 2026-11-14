@@ -46,6 +46,9 @@ export class NotificacionService {
 
     const id = this.siguienteId++;
     this._lista.update((l) => [...l, { id, mensaje, tipo }]);
-    this.temporizadores.set(id, setTimeout(() => this.cerrar(id), DURACION_MS));
+    this.temporizadores.set(
+      id,
+      setTimeout(() => this.cerrar(id), DURACION_MS),
+    );
   }
 }

@@ -13,7 +13,7 @@ class Modulo {
       nombre_m: this.nombre,
       descripcion_m: this.descripcion,
       id_area: this.idArea,
-      nombre_area: this.nombreArea
+      nombre_area: this.nombreArea,
     };
   }
 }

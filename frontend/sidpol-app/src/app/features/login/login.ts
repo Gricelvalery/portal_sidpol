@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +18,7 @@ const MS_OCULTAR_ERROR = 10000;
   imports: [FormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login implements OnInit {
   private readonly auth = inject(AuthService);
@@ -75,7 +82,7 @@ export class Login implements OnInit {
       error: (err: unknown) => {
         this.loading.set(false);
         this.mostrarError(err instanceof HttpErrorResponse ? err.status : 0);
-      }
+      },
     });
   }
 
@@ -83,7 +90,7 @@ export class Login implements OnInit {
     const mensajes: Record<number, string> = {
       403: 'Usuario no autorizado. Contacte al administrador.',
       401: 'Usuario o contraseña incorrectos.',
-      429: 'Demasiados intentos. Espera unos minutos e intenta de nuevo.'
+      429: 'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
     };
     this.errorMsg.set(mensajes[status] ?? 'Error de conexión. Intente nuevamente.');
 

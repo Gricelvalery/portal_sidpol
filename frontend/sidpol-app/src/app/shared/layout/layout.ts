@@ -17,7 +17,7 @@ export interface ModuloMenu extends Modulo {
   imports: [RouterOutlet, UpperCasePipe],
   templateUrl: './layout.html',
   styleUrl: './layout.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Layout implements OnInit {
   private readonly auth = inject(AuthService);
@@ -38,16 +38,18 @@ export class Layout implements OnInit {
 
   /** El backend ya devuelve solo lo que el usuario puede ver (admin: todo). Aquí se ordena y agrupa. */
   private cargarMenu(): void {
-    forkJoin({ modulos: this.moduloService.listar(), submodulos: this.submoduloService.listar() })
-      .subscribe(({ modulos, submodulos }) => {
-        const subs = [...submodulos].sort((a, b) => a.nombre_sm.localeCompare(b.nombre_sm));
-        this.modulos.set(
-          [...modulos]
-            .sort((a, b) => a.nombre_m.localeCompare(b.nombre_m))
-            .map((m) => ({ ...m, submodulos: subs.filter((s) => s.modulos_id_m === m.id_m) }))
-            .filter((m) => m.submodulos.length > 0 || this.auth.esAdmin())
-        );
-      });
+    forkJoin({
+      modulos: this.moduloService.listar(),
+      submodulos: this.submoduloService.listar(),
+    }).subscribe(({ modulos, submodulos }) => {
+      const subs = [...submodulos].sort((a, b) => a.nombre_sm.localeCompare(b.nombre_sm));
+      this.modulos.set(
+        [...modulos]
+          .sort((a, b) => a.nombre_m.localeCompare(b.nombre_m))
+          .map((m) => ({ ...m, submodulos: subs.filter((s) => s.modulos_id_m === m.id_m) }))
+          .filter((m) => m.submodulos.length > 0 || this.auth.esAdmin()),
+      );
+    });
   }
 
   protected estaAbierto(idModulo: number): boolean {
@@ -57,7 +59,8 @@ export class Layout implements OnInit {
   protected toggleModulo(idModulo: number): void {
     this.abiertos.update((actual) => {
       const nuevo = new Set(actual);
-      if (nuevo.has(idModulo)) nuevo.delete(idModulo); else nuevo.add(idModulo);
+      if (nuevo.has(idModulo)) nuevo.delete(idModulo);
+      else nuevo.add(idModulo);
       return nuevo;
     });
   }

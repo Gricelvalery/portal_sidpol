@@ -1,6 +1,5 @@
 @if (!cargando() && dashboards().length > 0) {
   <div class="visor-wrapper">
-
     <div class="visor-header">
       <div class="visor-titulo">
         <i class="fa-solid fa-chart-line"></i>
@@ -19,7 +18,6 @@
     </div>
 
     <div class="visor-body">
-
       @if ((seleccionado()?.paginas?.length ?? 0) > 0) {
         <aside class="visor-sidebar">
           <div class="visor-sidebar-titulo">PÁGINAS</div>
@@ -27,7 +25,8 @@
             @for (p of seleccionado()?.paginas ?? []; track p.nombre) {
               <li
                 [class.activa]="paginaActiva()?.nombre === p.nombre"
-                (click)="seleccionarPagina(p)">
+                (click)="seleccionarPagina(p)"
+              >
                 <i class="fa-solid fa-chevron-right"></i>
                 {{ p.nombre }}
               </li>
@@ -47,7 +46,8 @@
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"
             allow="fullscreen"
             allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin">
+            referrerpolicy="strict-origin-when-cross-origin"
+          >
           </iframe>
         } @else if (urlNoPermitida()) {
           <div class="visor-vacio">
@@ -61,15 +61,12 @@
           </div>
         }
       </div>
-
     </div>
   </div>
 }
 
 @if (cargando()) {
-  <div class="visor-cargando">
-    <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
-  </div>
+  <div class="visor-cargando"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</div>
 }
 
 @if (!cargando() && sinAcceso()) {

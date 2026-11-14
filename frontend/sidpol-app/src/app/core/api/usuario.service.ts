@@ -3,7 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  PermisosAsignados, Usuario, UsuarioCrearPayload, UsuarioEditarPayload, UsuarioGuardadoResponse
+  PermisosAsignados,
+  Usuario,
+  UsuarioCrearPayload,
+  UsuarioEditarPayload,
+  UsuarioGuardadoResponse,
 } from '../models';
 
 @Injectable({ providedIn: 'root' })

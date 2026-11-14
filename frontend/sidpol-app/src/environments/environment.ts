@@ -4,5 +4,5 @@ export const environment = {
   production: true,
   apiUrl: '/api',
   // Dominios permitidos para el iframe del visor (también se valida en el backend).
-  powerBiHosts: ['app.powerbi.com'] as readonly string[]
+  powerBiHosts: ['app.powerbi.com'] as readonly string[],
 };

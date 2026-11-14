@@ -32,13 +32,12 @@ const SQL_ACCESOS = `
   SELECT 'submodulo' AS tipo, id_sm AS id FROM submodulos_acc`;
 
 const permisoRepository = {
-
   /** Accesos efectivos: { submodulos: [ids], dashboards: [ids] } */
   async accesos(usuarioId, ejecutor = db) {
     const { rows } = await ejecutor.query(SQL_ACCESOS, [usuarioId]);
     return {
-      submodulos: rows.filter(r => r.tipo === 'submodulo').map(r => r.id),
-      dashboards: rows.filter(r => r.tipo === 'dashboard').map(r => r.id)
+      submodulos: rows.filter((r) => r.tipo === 'submodulo').map((r) => r.id),
+      dashboards: rows.filter((r) => r.tipo === 'dashboard').map((r) => r.id),
     };
   },
 
@@ -46,22 +45,23 @@ const permisoRepository = {
   async tieneAcceso(usuarioId, tipo, id, ejecutor = db) {
     const { rows } = await ejecutor.query(
       `SELECT EXISTS (SELECT 1 FROM (${SQL_ACCESOS}) a WHERE a.tipo = $2 AND a.id = $3) AS ok`,
-      [usuarioId, tipo, id]
+      [usuarioId, tipo, id],
     );
     return rows[0].ok;
   },
 
   /** Permisos asignados explícitamente (lo que ve y edita el admin). */
   async asignados(usuarioId, ejecutor = db) {
-    const { rows } = await ejecutor.query(`
+    const { rows } = await ejecutor.query(
+      `
       SELECT 'submodulo' AS tipo, submodulos_id_sm AS id FROM permisos_submodulo WHERE usuario_id_u = $1
       UNION ALL
       SELECT 'dashboard' AS tipo, dashboards_id_d AS id FROM permisos WHERE usuario_id_u = $1`,
-      [usuarioId]
+      [usuarioId],
     );
     return {
-      submodulos_ids: rows.filter(r => r.tipo === 'submodulo').map(r => r.id),
-      dashboards_ids: rows.filter(r => r.tipo === 'dashboard').map(r => r.id)
+      submodulos_ids: rows.filter((r) => r.tipo === 'submodulo').map((r) => r.id),
+      dashboards_ids: rows.filter((r) => r.tipo === 'dashboard').map((r) => r.id),
     };
   },
 
@@ -71,13 +71,13 @@ const permisoRepository = {
     if (submodulosIds.length) {
       await ejecutor.query(
         'INSERT INTO permisos_submodulo (usuario_id_u, submodulos_id_sm) SELECT $1, unnest($2::int[])',
-        [usuarioId, submodulosIds]
+        [usuarioId, submodulosIds],
       );
     }
     if (dashboardsIds.length) {
       await ejecutor.query(
         'INSERT INTO permisos (usuario_id_u, dashboards_id_d) SELECT $1, unnest($2::int[])',
-        [usuarioId, dashboardsIds]
+        [usuarioId, dashboardsIds],
       );
     }
   },
@@ -92,11 +92,10 @@ const permisoRepository = {
     if (!ids.length) return [];
     const { rows } = await ejecutor.query(
       `SELECT s.id_sm FROM submodulos s WHERE s.id_sm = ANY($1::int[]) AND ${ES_CONFIG}`,
-      [ids]
+      [ids],
     );
-    return rows.map(r => r.id_sm);
-  }
-
+    return rows.map((r) => r.id_sm);
+  },
 };
 
 module.exports = permisoRepository;

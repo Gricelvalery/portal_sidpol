@@ -10,9 +10,10 @@ const usuarioRepository = require('../repositories/usuarioRepository');
 const HASH_RELLENO = bcrypt.hashSync('sidpol-usuario-inexistente', env.BCRYPT_COST);
 
 const authService = {
-
   async login(username, contrasenia) {
-    const credenciales = await usuarioRepository.buscarCredenciales(String(username).trim().toLowerCase());
+    const credenciales = await usuarioRepository.buscarCredenciales(
+      String(username).trim().toLowerCase(),
+    );
 
     const valida = await bcrypt.compare(contrasenia, credenciales?.hash || HASH_RELLENO);
     if (!credenciales || !valida) {
@@ -23,15 +24,13 @@ const authService = {
     }
 
     const { usuario } = credenciales;
-    const token = jwt.sign(
-      { id: usuario.id, rol: usuario.rol },
-      jwtConfig.secret,
-      { expiresIn: jwtConfig.expiresIn, algorithm: jwtConfig.algorithm }
-    );
+    const token = jwt.sign({ id: usuario.id, rol: usuario.rol }, jwtConfig.secret, {
+      expiresIn: jwtConfig.expiresIn,
+      algorithm: jwtConfig.algorithm,
+    });
 
     return { token, usuario };
-  }
-
+  },
 };
 
 module.exports = authService;

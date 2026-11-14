@@ -2,12 +2,12 @@ const AppError = require('../utils/AppError');
 
 // Códigos de PostgreSQL que se traducen a un mensaje genérico (sin nombres de tablas/columnas)
 const ERRORES_PG = {
-  '23505': [409, 'El registro ya existe'],
-  '23503': [409, 'El registro está en uso o referencia un dato inexistente'],
-  '23502': [400, 'Falta un dato obligatorio'],
+  23505: [409, 'El registro ya existe'],
+  23503: [409, 'El registro está en uso o referencia un dato inexistente'],
+  23502: [400, 'Falta un dato obligatorio'],
   '22P02': [400, 'Dato inválido'],
-  '22001': [400, 'Valor demasiado largo'],
-  '22003': [400, 'Número fuera de rango']
+  22001: [400, 'Valor demasiado largo'],
+  22003: [400, 'Número fuera de rango'],
 };
 
 /** 404 en JSON para rutas que no existen. */

@@ -1,7 +1,6 @@
 const submoduloService = require('../services/submoduloService');
 
 const submoduloController = {
-
   async listar(req, res) {
     res.json(await submoduloService.listar(req.usuario));
   },
@@ -12,8 +11,7 @@ const submoduloController = {
 
   async actualizar(req, res) {
     res.json(await submoduloService.actualizar(req.params.id, req.body));
-  }
-
+  },
 };
 
 module.exports = submoduloController;

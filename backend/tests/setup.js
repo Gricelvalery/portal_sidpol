@@ -15,5 +15,5 @@ Object.assign(process.env, {
   TRUST_PROXY: 'false',
   RATE_LIMIT_API: '1000',
   RATE_LIMIT_LOGIN: '5',
-  BCRYPT_COST: '4'
+  BCRYPT_COST: '4',
 });

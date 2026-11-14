@@ -12,7 +12,7 @@ class Usuario {
     this.nombrePosicion = row.nombre_posicion;
     this.nombreArea = row.nombre_area;
   }
-//envia al frontend sin contraseña
+  //envia al frontend sin contraseña
   toJSON() {
     return {
       id_u: this.id,
@@ -25,7 +25,7 @@ class Usuario {
       autorizado: this.autorizado,
       id_posicion: this.idPosicion,
       nombre_posicion: this.nombrePosicion,
-      nombre_area: this.nombreArea
+      nombre_area: this.nombreArea,
     };
   }
 }

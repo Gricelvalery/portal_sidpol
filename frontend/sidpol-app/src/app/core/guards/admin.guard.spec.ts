@@ -4,7 +4,8 @@ import { adminGuard } from './admin.guard';
 import { iniciarSesion, proveedoresHttp, usuarioDePrueba } from '../../testing/helpers';
 
 describe('adminGuard', () => {
-  const ejecutar = () => TestBed.runInInjectionContext(() => adminGuard({ path: 'configuracion' }, []));
+  const ejecutar = () =>
+    TestBed.runInInjectionContext(() => adminGuard({ path: 'configuracion' }, []));
 
   afterEach(() => localStorage.clear());
 

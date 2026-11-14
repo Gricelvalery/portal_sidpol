@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { DashboardService } from '../../../core/api/dashboard.service';
@@ -7,10 +14,18 @@ import { SubmoduloService } from '../../../core/api/submodulo.service';
 import { UsuarioService } from '../../../core/api/usuario.service';
 import { Dashboard, Posicion, Rol, Submodulo, Usuario } from '../../../core/models';
 import { NotificacionService } from '../../../core/notificaciones/notificacion.service';
-import { CeldaTabla, ColumnaTabla, DataTable } from '../../../shared/components/data-table/data-table';
+import {
+  CeldaTabla,
+  ColumnaTabla,
+  DataTable,
+} from '../../../shared/components/data-table/data-table';
 import { Modal } from '../../../shared/components/modal/modal';
 import { filtrarPorTexto } from '../../../shared/utils/busqueda';
-import { ErroresCampos, EstadoFormulario, mensajeErrorNegocio } from '../../../shared/utils/estado-formulario';
+import {
+  ErroresCampos,
+  EstadoFormulario,
+  mensajeErrorNegocio,
+} from '../../../shared/utils/estado-formulario';
 
 interface FormUsuario {
   nombres_u: string;
@@ -31,8 +46,13 @@ interface GrupoDashboards {
 const SOLO_LETRAS = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
 const limpiarEspacios = (v: string) => (v || '').replace(/\s+/g, ' ').trim();
 const formVacio = (): FormUsuario => ({
-  nombres_u: '', apellido_paterno_u: '', apellido_materno_u: '', contrasenia_u: '',
-  rol_u: 'user', id_posicion: null, autorizado: false
+  nombres_u: '',
+  apellido_paterno_u: '',
+  apellido_materno_u: '',
+  contrasenia_u: '',
+  rol_u: 'user',
+  id_posicion: null,
+  autorizado: false,
 });
 
 @Component({
@@ -40,7 +60,7 @@ const formVacio = (): FormUsuario => ({
   imports: [FormsModule, DataTable, CeldaTabla, Modal],
   templateUrl: './usuarios.html',
   styleUrls: ['../../../shared/styles/crud.css', './usuarios.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Usuarios implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
@@ -57,8 +77,15 @@ export class Usuarios implements OnInit {
   protected readonly cargando = signal(true);
   protected readonly busqueda = signal('');
   protected readonly filtrados = computed(() =>
-    filtrarPorTexto(this.usuarios(), this.busqueda(), (u) =>
-      [u.nombres_u, u.apellido_paterno_u, u.apellido_materno_u, u.username, u.correo_u, u.nombre_area]));
+    filtrarPorTexto(this.usuarios(), this.busqueda(), (u) => [
+      u.nombres_u,
+      u.apellido_paterno_u,
+      u.apellido_materno_u,
+      u.username,
+      u.correo_u,
+      u.nombre_area,
+    ]),
+  );
 
   protected readonly columnas: ColumnaTabla<Usuario>[] = [
     { titulo: 'Nombres', valor: (u) => u.nombres_u },
@@ -69,7 +96,7 @@ export class Usuarios implements OnInit {
     { titulo: 'Posición', valor: (u) => u.nombre_posicion, siVacio: '—' },
     { titulo: 'Área', valor: (u) => u.nombre_area, siVacio: '—' },
     { titulo: 'Rol', celda: 'rol' },
-    { titulo: 'Acciones', celda: 'acciones', claseCelda: 'acciones' }
+    { titulo: 'Acciones', celda: 'acciones', claseCelda: 'acciones' },
   ];
 
   protected readonly dashboardsAgrupados = computed<GrupoDashboards[]>(() => {
@@ -106,16 +133,18 @@ export class Usuarios implements OnInit {
       usuarios: this.usuarioService.listar(),
       posiciones: this.posicionService.listar(),
       dashboards: this.dashboardService.listar(),
-      submodulos: this.submoduloService.listar()
+      submodulos: this.submoduloService.listar(),
     }).subscribe({
       next: ({ usuarios, posiciones, dashboards, submodulos }) => {
         this.usuarios.set(usuarios);
         this.posiciones.set(posiciones);
         this.dashboards.set(dashboards);
-        this.submodulosAsignables.set(submodulos.filter((s) => !(s.ruta ?? '').startsWith('configuracion/')));
+        this.submodulosAsignables.set(
+          submodulos.filter((s) => !(s.ruta ?? '').startsWith('configuracion/')),
+        );
         this.cargando.set(false);
       },
-      error: () => this.cargando.set(false)
+      error: () => this.cargando.set(false),
     });
   }
 
@@ -146,7 +175,7 @@ export class Usuarios implements OnInit {
       contrasenia_u: '',
       rol_u: u.rol_u,
       id_posicion: u.id_posicion,
-      autorizado: u.autorizado || false
+      autorizado: u.autorizado || false,
     };
     this.estado.reiniciar();
     this.modalAbierto.set(true);
@@ -165,10 +194,12 @@ export class Usuarios implements OnInit {
 
     const errores: ErroresCampos = {};
     if (!f.nombres_u) errores['nombres_u'] = 'Los nombres son requeridos';
-    else if (!SOLO_LETRAS.test(f.nombres_u)) errores['nombres_u'] = 'Los nombres solo deben contener letras';
+    else if (!SOLO_LETRAS.test(f.nombres_u))
+      errores['nombres_u'] = 'Los nombres solo deben contener letras';
 
     if (!f.apellido_paterno_u) errores['apellido_paterno_u'] = 'El apellido paterno es requerido';
-    else if (!SOLO_LETRAS.test(f.apellido_paterno_u)) errores['apellido_paterno_u'] = 'El apellido paterno solo debe contener letras';
+    else if (!SOLO_LETRAS.test(f.apellido_paterno_u))
+      errores['apellido_paterno_u'] = 'El apellido paterno solo debe contener letras';
 
     if (f.apellido_materno_u && !SOLO_LETRAS.test(f.apellido_materno_u)) {
       errores['apellido_materno_u'] = 'El apellido materno solo debe contener letras';
@@ -187,31 +218,55 @@ export class Usuarios implements OnInit {
   protected guardar(): void {
     if (!this.estado.validar(this.validarFormulario())) return;
 
-    const { nombres_u, apellido_paterno_u, apellido_materno_u, contrasenia_u, rol_u, id_posicion, autorizado } = this.form;
+    const {
+      nombres_u,
+      apellido_paterno_u,
+      apellido_materno_u,
+      contrasenia_u,
+      rol_u,
+      id_posicion,
+      autorizado,
+    } = this.form;
     const actual = this.seleccionado();
 
     if (this.modoEditar() && actual) {
-      this.usuarioService.editar(actual.id_u, { nombres_u, apellido_paterno_u, apellido_materno_u, rol_u, id_posicion, autorizado })
+      this.usuarioService
+        .editar(actual.id_u, {
+          nombres_u,
+          apellido_paterno_u,
+          apellido_materno_u,
+          rol_u,
+          id_posicion,
+          autorizado,
+        })
         .subscribe({
           next: () => {
             this.cerrarModal();
             this.cargarDatos();
             this.notificaciones.exito('Usuario actualizado correctamente');
           },
-          error: (err: unknown) => this.estado.aplicarRespuesta(err, 'Error al editar usuario')
+          error: (err: unknown) => this.estado.aplicarRespuesta(err, 'Error al editar usuario'),
         });
       return;
     }
 
     // Todo usuario nuevo se crea con rol 'user' y sin permisos (lo fuerza el backend)
-    this.usuarioService.crear({ nombres_u, apellido_paterno_u, apellido_materno_u, contrasenia_u, id_posicion, autorizado })
+    this.usuarioService
+      .crear({
+        nombres_u,
+        apellido_paterno_u,
+        apellido_materno_u,
+        contrasenia_u,
+        id_posicion,
+        autorizado,
+      })
       .subscribe({
         next: ({ usuario }) => {
           this.cerrarModal();
           this.cargarDatos();
           this.notificaciones.exito(`Usuario creado: ${usuario.username} (${usuario.correo_u})`);
         },
-        error: (err: unknown) => this.estado.aplicarRespuesta(err, 'Error al crear usuario')
+        error: (err: unknown) => this.estado.aplicarRespuesta(err, 'Error al crear usuario'),
       });
   }
 
@@ -234,7 +289,7 @@ export class Usuarios implements OnInit {
       error: (err: unknown) => {
         this.modalEliminarAbierto.set(false);
         this.notificarErrorNegocio(err, 'Error al eliminar usuario');
-      }
+      },
     });
   }
 
@@ -253,7 +308,7 @@ export class Usuarios implements OnInit {
         this.permisosDashboards.set(new Set(dashboards_ids));
         this.modalPermisosAbierto.set(true);
       },
-      error: () => this.notificaciones.error('Error al cargar permisos')
+      error: () => this.notificaciones.error('Error al cargar permisos'),
     });
   }
 
@@ -268,21 +323,24 @@ export class Usuarios implements OnInit {
   protected guardarPermisos(): void {
     const u = this.seleccionado();
     if (!u) return;
-    this.usuarioService.guardarPermisos(u.id_u, {
-      dashboards_ids: [...this.permisosDashboards()],
-      submodulos_ids: [...this.permisosSubmodulos()]
-    }).subscribe({
-      next: () => {
-        this.modalPermisosAbierto.set(false);
-        this.notificaciones.exito('Permisos actualizados correctamente');
-      },
-      error: (err: unknown) => this.notificarErrorNegocio(err, 'Error al guardar permisos')
-    });
+    this.usuarioService
+      .guardarPermisos(u.id_u, {
+        dashboards_ids: [...this.permisosDashboards()],
+        submodulos_ids: [...this.permisosSubmodulos()],
+      })
+      .subscribe({
+        next: () => {
+          this.modalPermisosAbierto.set(false);
+          this.notificaciones.exito('Permisos actualizados correctamente');
+        },
+        error: (err: unknown) => this.notificarErrorNegocio(err, 'Error al guardar permisos'),
+      });
   }
 }
 
 function alternar(conjunto: ReadonlySet<number>, id: number): ReadonlySet<number> {
   const nuevo = new Set(conjunto);
-  if (nuevo.has(id)) nuevo.delete(id); else nuevo.add(id);
+  if (nuevo.has(id)) nuevo.delete(id);
+  else nuevo.add(id);
   return nuevo;
 }

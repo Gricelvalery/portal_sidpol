@@ -8,14 +8,14 @@ const responder429 = (mensaje) => (req, res) => res.status(429).json({ error: me
 const base = {
   windowMs: QUINCE_MIN,
   standardHeaders: 'draft-8',
-  legacyHeaders: false
+  legacyHeaders: false,
 };
 
 // Límite general para toda la API, por IP
 const limiterApi = rateLimit({
   ...base,
   limit: env.RATE_LIMIT_API,
-  handler: responder429('Demasiadas peticiones. Intenta de nuevo en unos minutos.')
+  handler: responder429('Demasiadas peticiones. Intenta de nuevo en unos minutos.'),
 });
 
 // Login: RATE_LIMIT_LOGIN (5) intentos FALLIDOS por IP + username (un agente que
@@ -25,17 +25,20 @@ const limiterLoginUsuario = rateLimit({
   limit: env.RATE_LIMIT_LOGIN,
   skipSuccessfulRequests: true,
   keyGenerator: (req) => {
-    const username = String(req.body?.username ?? '').trim().toLowerCase().slice(0, 80);
+    const username = String(req.body?.username ?? '')
+      .trim()
+      .toLowerCase()
+      .slice(0, 80);
     return `${ipKeyGenerator(req.ip)}|${username}`;
   },
-  handler: responder429('Demasiados intentos. Intenta de nuevo en unos minutos.')
+  handler: responder429('Demasiados intentos. Intenta de nuevo en unos minutos.'),
 });
 
 // Login: tope por IP sin importar el username (evita probar muchos usuarios)
 const limiterLoginIp = rateLimit({
   ...base,
   limit: 30,
-  handler: responder429('Demasiados intentos. Intenta de nuevo en unos minutos.')
+  handler: responder429('Demasiados intentos. Intenta de nuevo en unos minutos.'),
 });
 
 module.exports = { limiterApi, limiterLoginUsuario, limiterLoginIp };
