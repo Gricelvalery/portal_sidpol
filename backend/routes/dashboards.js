@@ -4,11 +4,11 @@ const dashboardController = require('../controllers/dashboardController');
 const verificarToken = require('../middlewares/authMiddleware');
 const checkRole = require('../middlewares/checkRole');
 const checkPermission = require('../middlewares/checkPermission');
-const { dashboardValidator } = require('../validators/catalogoValidator');
+const { dashboardValidator, dashboardActualizarValidator } = require('../validators/catalogoValidator');
 
 router.get('/', verificarToken, dashboardController.listar);
 router.get('/:id', verificarToken, checkPermission('dashboard'), dashboardController.obtener);
 router.post('/', verificarToken, checkRole('admin'), dashboardValidator, dashboardController.crear);
-router.put('/:id', verificarToken, checkRole('admin'), dashboardValidator, dashboardController.actualizar);
+router.put('/:id', verificarToken, checkRole('admin'), dashboardActualizarValidator, dashboardController.actualizar);
 
 module.exports = router;

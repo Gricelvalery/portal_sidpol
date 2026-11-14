@@ -1,0 +1,31 @@
+{
+  "name": "sidpol-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API REST del Portal SIDPOL (Express 5 + PostgreSQL/Supabase)",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "8.7.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0"
+  },
+  "overrides": {
+    "encodeurl": "2.0.0",
+    "ip-address": "10.7.5",
+    "semver@^7": "7.8.5"
+  }
+}

@@ -1,3 +1,4 @@
+const AppError = require('../utils/AppError');
 const db = require('../config/db');
 const Submodulo = require('../models/Submodulo');
 const permisoService = require('./permisoService');
@@ -38,6 +39,7 @@ const submoduloService = {
       'UPDATE submodulos SET nombre_sm=$1, descripcion_sm=$2, modulos_id_m=$3 WHERE id_sm=$4 RETURNING *',
       [nombre_sm, descripcion_sm, modulos_id_m, id]
     );
+    if (result.rows.length === 0) throw AppError.notFound('Submódulo no encontrado');
     return new Submodulo(result.rows[0]).toJSON();
   }
 

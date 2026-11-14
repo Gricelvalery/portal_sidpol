@@ -1,3 +1,4 @@
+const AppError = require('../utils/AppError');
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
@@ -32,7 +33,7 @@ async function generarUsernameDisponible(nombres, apellidoPaterno, apellidoMater
     );
     if (existe.rows.length === 0) return username;
   }
-  throw { status: 409, message: 'No se pudo generar un nombre de usuario disponible' };
+  throw new AppError(409, 'No se pudo generar un nombre de usuario disponible');
 }
 
 async function contarOtrosAdmins(id) {
@@ -45,7 +46,7 @@ async function contarOtrosAdmins(id) {
 
 async function obtenerFila(id) {
   const r = await db.query('SELECT id_u, rol_u, autorizado FROM usuario WHERE id_u = $1', [id]);
-  if (r.rows.length === 0) throw { status: 404, message: 'Usuario no encontrado' };
+  if (r.rows.length === 0) throw new AppError(404, 'Usuario no encontrado');
   return r.rows[0];
 }
 
@@ -85,7 +86,7 @@ const usuarioService = {
         if (err.code !== '23505') throw err;
       }
     }
-    throw { status: 409, message: 'No se pudo generar un nombre de usuario disponible' };
+    throw new AppError(409, 'No se pudo generar un nombre de usuario disponible');
   },
 
   // El username y el correo NO cambian al editar el nombre.
@@ -96,10 +97,10 @@ const usuarioService = {
     const pierdeAdmin = actual.rol_u === 'admin' && (rol_u !== 'admin' || autorizado === false);
     if (pierdeAdmin) {
       if (actual.id_u === actor.id) {
-        throw { status: 400, message: 'No puedes quitarte el rol de administrador ni desautorizarte' };
+        throw new AppError(400, 'No puedes quitarte el rol de administrador ni desautorizarte');
       }
       if (await contarOtrosAdmins(id) === 0) {
-        throw { status: 400, message: 'Debe existir al menos un administrador autorizado' };
+        throw new AppError(400, 'Debe existir al menos un administrador autorizado');
       }
     }
 
@@ -116,10 +117,10 @@ const usuarioService = {
   async eliminar(id, actor) {
     const actual = await obtenerFila(id);
     if (actual.id_u === actor.id) {
-      throw { status: 400, message: 'No puedes eliminar tu propio usuario' };
+      throw new AppError(400, 'No puedes eliminar tu propio usuario');
     }
     if (actual.rol_u === 'admin' && await contarOtrosAdmins(id) === 0) {
-      throw { status: 400, message: 'Debe existir al menos un administrador autorizado' };
+      throw new AppError(400, 'Debe existir al menos un administrador autorizado');
     }
 
     await enTransaccion(async (client) => {
@@ -148,7 +149,7 @@ const usuarioService = {
     const dashs = [...new Set(dashboards_ids)];
 
     if ((await permisoService.submodulosDeConfiguracion(subs)).length > 0) {
-      throw { status: 400, message: 'Los submódulos de configuración son exclusivos del administrador' };
+      throw new AppError(400, 'Los submódulos de configuración son exclusivos del administrador');
     }
 
     await enTransaccion(async (client) => {

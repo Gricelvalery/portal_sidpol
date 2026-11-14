@@ -1,3 +1,4 @@
+const AppError = require('../utils/AppError');
 const db = require('../config/db');
 const Modulo = require('../models/Modulo');
 const permisoService = require('./permisoService');
@@ -40,6 +41,7 @@ const moduloService = {
       'UPDATE modulos SET nombre_m=$1, descripcion_m=$2, id_area=$3 WHERE id_m=$4 RETURNING *',
       [nombre_m, descripcion_m, id_area, id]
     );
+    if (result.rows.length === 0) throw AppError.notFound('Módulo no encontrado');
     return new Modulo(result.rows[0]).toJSON();
   }
 

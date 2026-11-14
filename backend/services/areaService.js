@@ -1,3 +1,4 @@
+const AppError = require('../utils/AppError');
 const db = require('../config/db');
 const Area = require('../models/Area');
 
@@ -23,6 +24,7 @@ const areaService = {
       'UPDATE area SET nombre_area=$1, descripcion_area=$2 WHERE id_area=$3 RETURNING *',
       [nombre_area, descripcion_area, id]
     );
+    if (result.rows.length === 0) throw AppError.notFound('Área no encontrada');
     return new Area(result.rows[0]).toJSON();
   }
 

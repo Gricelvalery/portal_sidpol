@@ -12,14 +12,10 @@ const checkPermission = (tipo, param = 'id') => async (req, res, next) => {
     return res.status(400).json({ error: 'Identificador inválido' });
   }
 
-  try {
-    if (!(await permisoService.tieneAcceso(req.usuario, tipo, id))) {
-      return res.status(403).json({ error: 'No tienes acceso a este recurso' });
-    }
-    next();
-  } catch (err) {
-    next(err);
+  if (!(await permisoService.tieneAcceso(req.usuario, tipo, id))) {
+    return res.status(403).json({ error: 'No tienes acceso a este recurso' });
   }
+  next();
 };
 
 module.exports = checkPermission;

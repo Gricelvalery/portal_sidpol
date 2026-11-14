@@ -1,18 +1,11 @@
-const { body, param, validationResult } = require('express-validator');
+const { body } = require('express-validator');
+const { validar, idParam: idParamDe } = require('../middlewares/validate');
 
 // Letras (con tildes/ñ) y espacios simples entre palabras: "Juan Carlos", "De la Cruz"
 const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
 const limpiarEspacios = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
 
-const validar = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
-
-const idParam = param('id').isInt({ min: 1 }).withMessage('Identificador inválido').toInt();
+const idParam = idParamDe();
 
 const camposNombre = [
   body('nombres_u')

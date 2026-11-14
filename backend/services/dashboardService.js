@@ -1,3 +1,4 @@
+const AppError = require('../utils/AppError');
 const db = require('../config/db');
 const Dashboard = require('../models/Dashboard');
 const permisoService = require('./permisoService');
@@ -27,7 +28,7 @@ const dashboardService = {
   // El acceso ya fue validado por checkPermission('dashboard').
   async obtener(id) {
     const result = await db.query(`${SELECT_DASHBOARDS} WHERE d.id_d = $1`, [id]);
-    if (result.rows.length === 0) throw { status: 404, message: 'Dashboard no encontrado' };
+    if (result.rows.length === 0) throw new AppError(404, 'Dashboard no encontrado');
     return new Dashboard(result.rows[0]).toJSON();
   },
 
@@ -64,6 +65,7 @@ const dashboardService = {
       'UPDATE dashboards SET nombre_d=$1, link_d=$2, submodulos_id_sm=$3, paginas=$4 WHERE id_d=$5 RETURNING *',
       [nombre_d, link_d, submodulos_id_sm, JSON.stringify(paginas || []), id]
     );
+    if (result.rows.length === 0) throw AppError.notFound('Dashboard no encontrado');
     return new Dashboard(result.rows[0]).toJSON();
   }
 

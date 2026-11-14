@@ -109,6 +109,12 @@ export class Login implements OnInit {
             'Usuario o contraseña incorrectos.';
 
         }
+        else if (err.status === 429) {
+
+          this.errorMsg =
+            'Demasiados intentos. Espera unos minutos e intenta de nuevo.';
+
+        }
         else {
 
           this.errorMsg =

@@ -1,3 +1,4 @@
+const AppError = require('../utils/AppError');
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -19,18 +20,18 @@ const authService = {
 
     const valida = await bcrypt.compare(contrasenia, userRow?.contrasenia_u || HASH_RELLENO);
     if (!userRow || !valida) {
-      throw { status: 401, message: 'Credenciales incorrectas' };
+      throw new AppError(401, 'Credenciales incorrectas');
     }
 
     if (!userRow.autorizado) {
-      throw { status: 403, message: 'Usuario no autorizado. Contacte al administrador.' };
+      throw new AppError(403, 'Usuario no autorizado. Contacte al administrador.');
     }
 
     const usuario = new Usuario(userRow);
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },
       jwtConfig.secret,
-      { expiresIn: jwtConfig.expiresIn, algorithm: 'HS256' }
+      { expiresIn: jwtConfig.expiresIn, algorithm: jwtConfig.algorithm }
     );
 
     return { token, usuario: usuario.toJSON() };

@@ -1,35 +1,18 @@
 const areaService = require('../services/areaService');
 
+// Sin try/catch: Express 5 envía las promesas rechazadas al errorHandler.
 const areaController = {
 
   async listar(req, res) {
-    try {
-      const areas = await areaService.listar();
-      res.json(areas);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al obtener áreas' });
-    }
+    res.json(await areaService.listar());
   },
 
   async crear(req, res) {
-    try {
-      const area = await areaService.crear(req.body);
-      res.json(area);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al crear área' });
-    }
+    res.status(201).json(await areaService.crear(req.body));
   },
 
   async actualizar(req, res) {
-    try {
-      const area = await areaService.actualizar(req.params.id, req.body);
-      res.json(area);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Error al actualizar área' });
-    }
+    res.json(await areaService.actualizar(req.params.id, req.body));
   }
 
 };
