@@ -10,6 +10,12 @@ const ERRORES_PG = {
   '22003': [400, 'Número fuera de rango']
 };
 
+/** 404 en JSON para rutas que no existen. */
+const notFound = (req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' });
+};
+
+/** Manejo centralizado de errores: nunca expone mensajes internos ni de la BD. */
 // eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   if (res.headersSent) return next(err);
@@ -40,4 +46,4 @@ const errorHandler = (err, req, res, next) => {
   res.status(500).json({ error: 'Error interno' });
 };
 
-module.exports = errorHandler;
+module.exports = { notFound, errorHandler };

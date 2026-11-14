@@ -1,48 +1,24 @@
 const AppError = require('../utils/AppError');
-const db = require('../config/db');
-const Modulo = require('../models/Modulo');
+const moduloRepository = require('../repositories/moduloRepository');
 const permisoService = require('./permisoService');
-
-const SELECT_MODULOS = `
-  SELECT m.*, a.nombre_area
-    FROM modulos m
-    LEFT JOIN area a ON m.id_area = a.id_area`;
 
 const moduloService = {
 
   // Admin ve todo; user solo los módulos que contienen algún submódulo accesible.
   async listar(usuario) {
-    if (permisoService.esAdmin(usuario)) {
-      const result = await db.query(`${SELECT_MODULOS} ORDER BY m.id_m`);
-      return result.rows.map(row => new Modulo(row).toJSON());
-    }
-    const ids = await permisoService.submodulosAccesibles(usuario.id);
-    const result = await db.query(`
-      ${SELECT_MODULOS}
-       WHERE m.id_m IN (SELECT s.modulos_id_m FROM submodulos s WHERE s.id_sm = ANY($1::int[]))
-       ORDER BY m.id_m`,
-      [ids]
-    );
-    return result.rows.map(row => new Modulo(row).toJSON());
+    const accesos = await permisoService.accesosDe(usuario);
+    if (!accesos) return moduloRepository.listar();
+    return moduloRepository.listar({ idsSubmodulos: accesos.submodulos });
   },
 
-  async crear(datos) {
-    const { nombre_m, descripcion_m, id_area } = datos;
-    const result = await db.query(
-      'INSERT INTO modulos (nombre_m, descripcion_m, id_area) VALUES ($1, $2, $3) RETURNING *',
-      [nombre_m, descripcion_m, id_area]
-    );
-    return new Modulo(result.rows[0]).toJSON();
+  crear(datos) {
+    return moduloRepository.insertar(datos);
   },
 
   async actualizar(id, datos) {
-    const { nombre_m, descripcion_m, id_area } = datos;
-    const result = await db.query(
-      'UPDATE modulos SET nombre_m=$1, descripcion_m=$2, id_area=$3 WHERE id_m=$4 RETURNING *',
-      [nombre_m, descripcion_m, id_area, id]
-    );
-    if (result.rows.length === 0) throw AppError.notFound('Módulo no encontrado');
-    return new Modulo(result.rows[0]).toJSON();
+    const modulo = await moduloRepository.actualizar(id, datos);
+    if (!modulo) throw AppError.notFound('Módulo no encontrado');
+    return modulo;
   }
 
 };

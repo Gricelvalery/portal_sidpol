@@ -1,5 +1,5 @@
 const { body } = require('express-validator');
-const { validar, idParam: idParamDe } = require('../middlewares/validate');
+const { validar, idParam: idParamDe } = require('../middlewares/validacion');
 
 // Letras (con tildes/ñ) y espacios simples entre palabras: "Juan Carlos", "De la Cruz"
 const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;

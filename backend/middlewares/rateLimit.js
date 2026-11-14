@@ -18,11 +18,11 @@ const limiterApi = rateLimit({
   handler: responder429('Demasiadas peticiones. Intenta de nuevo en unos minutos.')
 });
 
-// Login: 5 intentos FALLIDOS por IP + username (un agente que se equivoca
-// no bloquea a toda la comisaría que comparte la misma IP pública)
+// Login: RATE_LIMIT_LOGIN (5) intentos FALLIDOS por IP + username (un agente que
+// se equivoca no bloquea a toda la comisaría que comparte la misma IP pública)
 const limiterLoginUsuario = rateLimit({
   ...base,
-  limit: 5,
+  limit: env.RATE_LIMIT_LOGIN,
   skipSuccessfulRequests: true,
   keyGenerator: (req) => {
     const username = String(req.body?.username ?? '').trim().toLowerCase().slice(0, 80);

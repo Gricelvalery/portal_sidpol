@@ -1,40 +1,35 @@
-const AppError = require('../utils/AppError');
-const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const env = require('../config/env');
 const jwtConfig = require('../config/jwt');
-const Usuario = require('../models/Usuario');
+const AppError = require('../utils/AppError');
+const usuarioRepository = require('../repositories/usuarioRepository');
 
 // Hash de relleno: si el usuario no existe igual se ejecuta un bcrypt.compare,
 // así el tiempo de respuesta no revela qué usernames existen.
-const HASH_RELLENO = bcrypt.hashSync('sidpol-usuario-inexistente', 12);
+const HASH_RELLENO = bcrypt.hashSync('sidpol-usuario-inexistente', env.BCRYPT_COST);
 
 const authService = {
 
   async login(username, contrasenia) {
-    const result = await db.query(
-      'SELECT * FROM usuario WHERE username = $1',
-      [String(username).trim().toLowerCase()]
-    );
-    const userRow = result.rows[0];
+    const credenciales = await usuarioRepository.buscarCredenciales(String(username).trim().toLowerCase());
 
-    const valida = await bcrypt.compare(contrasenia, userRow?.contrasenia_u || HASH_RELLENO);
-    if (!userRow || !valida) {
-      throw new AppError(401, 'Credenciales incorrectas');
+    const valida = await bcrypt.compare(contrasenia, credenciales?.hash || HASH_RELLENO);
+    if (!credenciales || !valida) {
+      throw AppError.unauthorized('Credenciales incorrectas');
+    }
+    if (!credenciales.autorizado) {
+      throw AppError.forbidden('Usuario no autorizado. Contacte al administrador.');
     }
 
-    if (!userRow.autorizado) {
-      throw new AppError(403, 'Usuario no autorizado. Contacte al administrador.');
-    }
-
-    const usuario = new Usuario(userRow);
+    const { usuario } = credenciales;
     const token = jwt.sign(
       { id: usuario.id, rol: usuario.rol },
       jwtConfig.secret,
       { expiresIn: jwtConfig.expiresIn, algorithm: jwtConfig.algorithm }
     );
 
-    return { token, usuario: usuario.toJSON() };
+    return { token, usuario };
   }
 
 };

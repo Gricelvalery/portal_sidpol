@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const posicionController = require('../controllers/posicionController');
-const verificarToken = require('../middlewares/authMiddleware');
-const checkRole = require('../middlewares/checkRole');
+const { verificarToken } = require('../middlewares/auth');
+const { checkRole } = require('../middlewares/permisos');
 const { posicionValidator } = require('../validators/catalogoValidator');
 
 router.get('/', verificarToken, posicionController.listar);

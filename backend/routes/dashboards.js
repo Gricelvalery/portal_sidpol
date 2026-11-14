@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const dashboardController = require('../controllers/dashboardController');
-const verificarToken = require('../middlewares/authMiddleware');
-const checkRole = require('../middlewares/checkRole');
-const checkPermission = require('../middlewares/checkPermission');
+const { verificarToken } = require('../middlewares/auth');
+const { checkRole, checkPermission } = require('../middlewares/permisos');
 const { dashboardValidator, dashboardActualizarValidator } = require('../validators/catalogoValidator');
 
 router.get('/', verificarToken, dashboardController.listar);

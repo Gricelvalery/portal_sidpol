@@ -1,5 +1,5 @@
 const { body } = require('express-validator');
-const { validar, idParam } = require('../middlewares/validate');
+const { validar, idParam } = require('../middlewares/validacion');
 
 // Los largos máximos coinciden con las columnas de la BD
 const textoObligatorio = (campo, mensaje, max) =>

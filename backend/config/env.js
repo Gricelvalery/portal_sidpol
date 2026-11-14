@@ -1,7 +1,10 @@
 // Carga y valida la configuración UNA sola vez. Si algo falta o es inválido,
 // el proceso termina antes de aceptar peticiones. Nunca imprime valores.
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+// En pruebas (NODE_ENV=test) NUNCA se lee el .env real: las variables vienen de tests/setup.js.
+if (process.env.NODE_ENV !== 'test') {
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+}
 
 const errores = [];
 
@@ -63,8 +66,14 @@ const env = {
   JWT_EXPIRES_IN,
   CORS_ORIGIN,
   TRUST_PROXY,
-  RATE_LIMIT_API: entero('RATE_LIMIT_API', { porDefecto: 500 })
+  RATE_LIMIT_API: entero('RATE_LIMIT_API', { porDefecto: 500 }),
+  RATE_LIMIT_LOGIN: entero('RATE_LIMIT_LOGIN', { porDefecto: 5, max: 100 }),
+  BCRYPT_COST: entero('BCRYPT_COST', { porDefecto: 12, min: 4, max: 15 })
 };
+
+if (env.NODE_ENV === 'production' && env.BCRYPT_COST < 12) {
+  errores.push('BCRYPT_COST debe ser al menos 12 en producción');
+}
 
 if (errores.length > 0) {
   console.error('Configuración inválida en backend/.env (ver backend/.env.example):');
