@@ -1,0 +1,16 @@
+# Dependencias, builds y reportes
+node_modules/
+dist/
+.angular/
+coverage/
+out-tsc/
+
+# Archivos generados
+package-lock.json
+
+# Recursos estáticos
+**/assets/**
+**/public/**
+*.ico
+*.png
+*.jpg

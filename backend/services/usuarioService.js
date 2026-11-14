@@ -1,109 +1,149 @@
-const db = require('../config/db');
-const Usuario = require('../models/Usuario');
-const Permiso = require('../models/Permiso');
+const bcrypt = require('bcrypt');
+const env = require('../config/env');
+const AppError = require('../utils/AppError');
+const usuarioRepository = require('../repositories/usuarioRepository');
+const permisoRepository = require('../repositories/permisoRepository');
+const { withTransaction } = require('../repositories/transaccion');
+const { candidatosUsername, correoDe } = require('../utils/username');
 
-function generarUsername(nombre, apellido) {
-  return `${nombre}.${apellido}`.toLowerCase().replace(/\s+/g, '');
+const MAX_CANDIDATOS = 10000;
+const REINTENTOS_INSERT = 3;
+
+/** Primer username libre: juan.perez → juan.perezc → juan.perezc2 ... (una sola consulta a la BD). */
+async function elegirUsername(nombres, apellidoPaterno, apellidoMaterno) {
+  const candidatos = candidatosUsername(nombres, apellidoPaterno, apellidoMaterno);
+  const base = candidatos.next().value;
+  const ocupados = await usuarioRepository.usernamesConPrefijo(base);
+  if (!ocupados.has(base)) return base;
+  for (let i = 0; i < MAX_CANDIDATOS; i++) {
+    const candidato = candidatos.next().value;
+    if (!ocupados.has(candidato)) return candidato;
+  }
+  throw AppError.conflict('No se pudo generar un nombre de usuario disponible');
+}
+
+/**
+ * Dentro de una transacción: bloquea a los admins autorizados (FOR UPDATE, en orden)
+ * y luego al usuario objetivo. Así dos cambios simultáneos no pueden dejar 0 admins.
+ */
+async function bloquearObjetivo(client, id) {
+  const admins = await usuarioRepository.bloquearAdminsAutorizados(client);
+  const objetivo = await usuarioRepository.obtenerEstado(id, client, { bloquear: true });
+  if (!objetivo) throw AppError.notFound('Usuario no encontrado');
+  return { objetivo, otrosAdmins: admins.filter((a) => a !== objetivo.id).length };
+}
+
+async function exigirUsuario(id) {
+  const estado = await usuarioRepository.obtenerEstado(id);
+  if (!estado) throw AppError.notFound('Usuario no encontrado');
+  return estado;
 }
 
 const usuarioService = {
-
-  async listar() {
-    const result = await db.query(`
-      SELECT u.id_u, u.nombre_u, u.apellido_u, u.correo_u, 
-             u.rol_u, u.username, u.id_posicion, u.autorizado,
-             p.nombre_posicion, a.nombre_area
-      FROM usuario u
-      LEFT JOIN posicion p ON u.id_posicion = p.id_posicion
-      LEFT JOIN area a ON p.id_area = a.id_area
-      ORDER BY u.id_u
-    `);
-    return result.rows.map(row => new Usuario(row).toJSON());
+  listar() {
+    return usuarioRepository.listar();
   },
 
+  // Todo usuario nuevo nace con rol 'user' y sin permisos.
   async crear(datos) {
-    const { nombre_u, apellido_u, correo_u, contrasenia_u, rol_u, id_posicion, autorizado } = datos;
-    const username = generarUsername(nombre_u, apellido_u);
+    const {
+      nombres_u,
+      apellido_paterno_u,
+      apellido_materno_u,
+      contrasenia_u,
+      id_posicion,
+      autorizado,
+    } = datos;
+    const hash = await bcrypt.hash(contrasenia_u, env.BCRYPT_COST);
 
-    const existe = await db.query('SELECT id_u FROM usuario WHERE username = $1', [username]);
-    if (existe.rows.length > 0) {
-      throw { status: 400, message: `El usuario ${username} ya existe` };
+    // Si otro admin crea el mismo username en paralelo, el UNIQUE lo rechaza (23505) y se reintenta.
+    for (let intento = 0; intento < REINTENTOS_INSERT; intento++) {
+      const username = await elegirUsername(nombres_u, apellido_paterno_u, apellido_materno_u);
+      try {
+        return await usuarioRepository.insertar({
+          nombres_u,
+          apellido_paterno_u,
+          apellido_materno_u: apellido_materno_u || null,
+          correo_u: correoDe(username),
+          contrasenia_u: hash,
+          rol_u: 'user',
+          id_posicion,
+          username,
+          autorizado: autorizado === true,
+        });
+      } catch (err) {
+        if (err.code !== '23505') throw err;
+      }
     }
-
-    const result = await db.query(`
-      INSERT INTO usuario (nombre_u, apellido_u, correo_u, contrasenia_u, rol_u, id_posicion, username, autorizado)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [nombre_u, apellido_u, correo_u, contrasenia_u, rol_u, id_posicion, username, autorizado || false]
-    );
-
-    return new Usuario(result.rows[0]).toJSON();
+    throw AppError.conflict('No se pudo generar un nombre de usuario disponible');
   },
 
-  async actualizar(id, datos) {
-    const { nombre_u, apellido_u, correo_u, rol_u, id_posicion, autorizado } = datos;
-    const username = generarUsername(nombre_u, apellido_u);
+  // El username y el correo NO cambian al editar el nombre.
+  async actualizar(id, datos, actor) {
+    const { nombres_u, apellido_paterno_u, apellido_materno_u, rol_u, id_posicion, autorizado } =
+      datos;
 
-    const existe = await db.query(
-      'SELECT id_u FROM usuario WHERE username = $1 AND id_u <> $2',
-      [username, id]
-    );
+    return withTransaction(async (client) => {
+      const { objetivo, otrosAdmins } = await bloquearObjetivo(client, id);
 
-    if (existe.rows.length > 0) {
-      throw { status: 400, message: `El usuario ${username} ya existe` };
-    }
+      const pierdeAdmin = objetivo.rol === 'admin' && (rol_u !== 'admin' || autorizado === false);
+      if (pierdeAdmin) {
+        if (objetivo.id === actor.id) {
+          throw AppError.badRequest('No puedes quitarte el rol de administrador ni desautorizarte');
+        }
+        if (otrosAdmins === 0) {
+          throw AppError.badRequest('Debe existir al menos un administrador autorizado');
+        }
+      }
 
-    const result = await db.query(`
-      UPDATE usuario 
-      SET nombre_u=$1, apellido_u=$2, correo_u=$3, rol_u=$4, id_posicion=$5, autorizado=$6, username=$7
-      WHERE id_u=$8 RETURNING *`,
-      [nombre_u, apellido_u, correo_u, rol_u, id_posicion, autorizado, username, id]
-    );
-
-    return new Usuario(result.rows[0]).toJSON();
+      return usuarioRepository.actualizar(
+        id,
+        {
+          nombres_u,
+          apellido_paterno_u,
+          apellido_materno_u: apellido_materno_u || null,
+          rol_u,
+          id_posicion,
+          autorizado,
+        },
+        client,
+      );
+    });
   },
 
-  async eliminar(id) {
-    // Primero elimina los permisos del usuario
-    await db.query('DELETE FROM permisos WHERE usuario_id_u = $1', [id]);
-    // Luego elimina el usuario
-    await db.query('DELETE FROM usuario WHERE id_u = $1', [id]);
+  async eliminar(id, actor) {
+    await withTransaction(async (client) => {
+      const { objetivo, otrosAdmins } = await bloquearObjetivo(client, id);
+      if (objetivo.id === actor.id) {
+        throw AppError.badRequest('No puedes eliminar tu propio usuario');
+      }
+      if (objetivo.rol === 'admin' && otrosAdmins === 0) {
+        throw AppError.badRequest('Debe existir al menos un administrador autorizado');
+      }
+      await permisoRepository.eliminarDeUsuario(id, client);
+      await usuarioRepository.eliminar(id, client);
+    });
     return true;
   },
 
   async obtenerPermisos(id) {
-    const result = await db.query(`
-      SELECT 
-        p.id_p,
-        p.dashboards_id_d,
-        d.nombre_d,
-        s.nombre_sm,
-        m.nombre_m
-      FROM permisos p
-      JOIN dashboards d 
-        ON p.dashboards_id_d = d.id_d
-      JOIN submodulos s 
-        ON d.submodulos_id_sm = s.id_sm
-      JOIN modulos m 
-        ON s.modulos_id_m = m.id_m
-      WHERE p.usuario_id_u = $1
-    `, [id]);
-
-    return result.rows.map(row => new Permiso(row).toJSON());
+    await exigirUsuario(id);
+    return permisoRepository.asignados(id);
   },
 
-  async guardarPermisos(id, dashboardsIds) {
-    await db.query('DELETE FROM permisos WHERE usuario_id_u = $1', [id]);
+  async guardarPermisos(id, { submodulos_ids = [], dashboards_ids = [] }) {
+    const subs = [...new Set(submodulos_ids)];
+    const dashs = [...new Set(dashboards_ids)];
 
-    for (const id_d of (dashboardsIds || [])) {
-      await db.query(
-        `INSERT INTO permisos (usuario_id_u, dashboards_id_d) VALUES ($1, $2)`,
-        [id, id_d]
-      );
+    await exigirUsuario(id);
+    if ((await permisoRepository.submodulosDeConfiguracion(subs)).length > 0) {
+      throw AppError.badRequest('Los submódulos de configuración son exclusivos del administrador');
     }
 
+    // Borrar + insertar: todo o nada
+    await withTransaction((client) => permisoRepository.reemplazar(id, subs, dashs, client));
     return true;
-  }
-
+  },
 };
 
 module.exports = usuarioService;

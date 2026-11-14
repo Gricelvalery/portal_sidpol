@@ -1,0 +1,266 @@
+<div class="config-page">
+  <h2 class="page-titulo">Usuarios</h2>
+
+  <app-data-table
+    [columnas]="columnas"
+    [filas]="filtrados()"
+    [cargando]="cargando()"
+    [(busqueda)]="busqueda"
+    textoAgregar="Agregar Usuario"
+    (agregar)="abrirAgregar()"
+  >
+    <ng-template appCelda="autorizado" [appCeldaDe]="filtrados()" let-u>
+      <i
+        class="fa-solid"
+        [class.fa-circle-check]="u.autorizado"
+        [class.fa-circle-xmark]="!u.autorizado"
+        [class.autorizado-si]="u.autorizado"
+        [class.autorizado-no]="!u.autorizado"
+      >
+      </i>
+    </ng-template>
+    <ng-template appCelda="rol" [appCeldaDe]="filtrados()" let-u>
+      <span
+        class="badge"
+        [class.badge-admin]="u.rol_u === 'admin'"
+        [class.badge-user]="u.rol_u !== 'admin'"
+      >
+        {{ u.rol_u }}
+      </span>
+    </ng-template>
+    <ng-template appCelda="acciones" [appCeldaDe]="filtrados()" let-u>
+      <button class="btn-icono" title="Editar" (click)="abrirEditar(u)">
+        <i class="fa-solid fa-pen"></i>
+      </button>
+      <button class="btn-icono btn-icono-gear" title="Permisos" (click)="abrirPermisos(u)">
+        <i class="fa-solid fa-gear"></i>
+      </button>
+      <button class="btn-icono btn-icono-trash" title="Eliminar" (click)="confirmarEliminar(u)">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </ng-template>
+  </app-data-table>
+</div>
+
+<!-- MODAL AGREGAR Y EDITAR -->
+@if (modalAbierto()) {
+  <app-modal
+    [titulo]="modoEditar() ? 'Editar usuario' : 'Agregar usuario'"
+    (cerrar)="cerrarModal()"
+  >
+    @if (estado.general()) {
+      <div class="mensaje-error-general">{{ estado.general() }}</div>
+    }
+
+    <div class="campo">
+      <label>Nombres*</label>
+      <input
+        type="text"
+        [formControl]="form.controls.nombres_u"
+        (input)="estado.limpiar('nombres_u')"
+        [class.input-error]="estado.errores()['nombres_u']"
+        placeholder="Ej: Juan Carlos"
+      />
+      @if (estado.errores()['nombres_u']; as error) {
+        <span class="mensaje-error">{{ error }}</span>
+      }
+    </div>
+
+    <div class="campo-fila">
+      <div class="campo">
+        <label>Apellido paterno*</label>
+        <input
+          type="text"
+          [formControl]="form.controls.apellido_paterno_u"
+          (input)="estado.limpiar('apellido_paterno_u')"
+          [class.input-error]="estado.errores()['apellido_paterno_u']"
+          placeholder="Ej: Pérez"
+        />
+        @if (estado.errores()['apellido_paterno_u']; as error) {
+          <span class="mensaje-error">{{ error }}</span>
+        }
+      </div>
+      <div class="campo">
+        <label>Apellido materno</label>
+        <input
+          type="text"
+          [formControl]="form.controls.apellido_materno_u"
+          (input)="estado.limpiar('apellido_materno_u')"
+          [class.input-error]="estado.errores()['apellido_materno_u']"
+          placeholder="Ej: Cáceres"
+        />
+        @if (estado.errores()['apellido_materno_u']; as error) {
+          <span class="mensaje-error">{{ error }}</span>
+        }
+      </div>
+    </div>
+
+    <!-- Username y correo los genera el backend y no cambian al editar -->
+    @if (modoEditar()) {
+      <div class="campo-fila">
+        <div class="campo">
+          <label>Usuario</label>
+          <input type="text" [value]="seleccionado()?.username" readonly />
+        </div>
+        <div class="campo">
+          <label>Email</label>
+          <input type="text" [value]="seleccionado()?.correo_u" readonly />
+        </div>
+      </div>
+    } @else {
+      <p class="campo-ayuda">
+        El usuario y el correo (&#64;sidpol.pe) se generan automáticamente. El usuario se crea con
+        rol <strong>user</strong> y sin permisos.
+      </p>
+
+      <div class="campo">
+        <label>Contraseña*</label>
+        <input
+          type="password"
+          [formControl]="form.controls.contrasenia_u"
+          (input)="estado.limpiar('contrasenia_u')"
+          [class.input-error]="estado.errores()['contrasenia_u']"
+          placeholder="Contraseña*"
+        />
+        @if (estado.errores()['contrasenia_u']; as error) {
+          <span class="mensaje-error">{{ error }}</span>
+        }
+      </div>
+    }
+
+    <div class="campo-fila">
+      <div class="campo">
+        <label>Posición</label>
+        <select
+          [formControl]="form.controls.id_posicion"
+          (change)="estado.limpiar('id_posicion')"
+          [class.input-error]="estado.errores()['id_posicion']"
+        >
+          <option [ngValue]="null">Seleccionar posición</option>
+          @for (p of posiciones(); track p.id_posicion) {
+            <option [ngValue]="p.id_posicion">{{ p.nombre_posicion }}</option>
+          }
+        </select>
+        @if (estado.errores()['id_posicion']; as error) {
+          <span class="mensaje-error">{{ error }}</span>
+        }
+      </div>
+      @if (modoEditar()) {
+        <div class="campo">
+          <label>Rol</label>
+          <select
+            [formControl]="form.controls.rol_u"
+            (change)="estado.limpiar('rol_u')"
+            [class.input-error]="estado.errores()['rol_u']"
+          >
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+          @if (estado.errores()['rol_u']; as error) {
+            <span class="mensaje-error">{{ error }}</span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="campo-checkbox">
+      <input type="checkbox" id="autorizado" [formControl]="form.controls.autorizado" />
+      <label for="autorizado">Autorizado</label>
+    </div>
+
+    <ng-container acciones>
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-guardar" (click)="guardar()">Guardar</button>
+    </ng-container>
+  </app-modal>
+}
+
+<!-- MODAL PERMISOS -->
+@if (modalPermisosAbierto()) {
+  <app-modal
+    titulo="Permisos de usuario"
+    variante="permisos"
+    [cerrarAlClickFuera]="false"
+    (cerrar)="modalPermisosAbierto.set(false)"
+  >
+    <p class="permisos-subtitulo">
+      <strong>{{ nombreCompleto(seleccionado()) }}</strong> · {{ seleccionado()?.username }}
+    </p>
+
+    @if (esAdminUsuario(seleccionado())) {
+      <div class="mensaje-info">
+        <i class="fa-solid fa-shield-halved"></i>
+        Los administradores tienen acceso total automáticamente; estos permisos no se aplican.
+      </div>
+    }
+
+    <div class="permisos-lista">
+      <!-- SECCION SUBMODULOS: da acceso a todos sus dashboards (incluidos los futuros) -->
+      <div class="permisos-seccion-titulo">
+        <i class="fa-solid fa-folder-open"></i> SUBMÓDULOS (acceso completo)
+      </div>
+      <div class="permisos-grupo">
+        @for (s of submodulosAsignables(); track s.id_sm) {
+          <div class="permiso-item">
+            <input
+              type="checkbox"
+              [id]="'sm_' + s.id_sm"
+              [checked]="permisosSubmodulos().has(s.id_sm)"
+              (change)="toggleSubmodulo(s.id_sm)"
+            />
+            <label [for]="'sm_' + s.id_sm">{{ s.nombre_m }} — {{ s.nombre_sm }}</label>
+          </div>
+        }
+      </div>
+      @if (submodulosAsignables().length === 0) {
+        <div class="sin-datos-small">No hay submódulos registrados</div>
+      }
+
+      <!-- SECCION DASHBOARDS -->
+      <div class="permisos-seccion-titulo"><i class="fa-solid fa-chart-line"></i> DASHBOARDS</div>
+      @for (grupo of dashboardsAgrupados(); track grupo.key) {
+        <div class="permisos-grupo">
+          <div class="permisos-grupo-titulo">{{ grupo.key }}</div>
+          @for (d of grupo.dashboards; track d.id_d) {
+            <div class="permiso-item">
+              <input
+                type="checkbox"
+                [id]="'d_' + d.id_d"
+                [checked]="permisosDashboards().has(d.id_d)"
+                (change)="togglePermiso(d.id_d)"
+              />
+              <label [for]="'d_' + d.id_d">{{ d.nombre_d }}</label>
+            </div>
+          }
+        </div>
+      }
+      @if (dashboards().length === 0) {
+        <div class="sin-datos-small">No hay dashboards registrados</div>
+      }
+    </div>
+
+    <ng-container acciones>
+      <button class="btn-cancelar" (click)="modalPermisosAbierto.set(false)">Cancelar</button>
+      <button class="btn-guardar" (click)="guardarPermisos()">Guardar</button>
+    </ng-container>
+  </app-modal>
+}
+
+<!-- MODAL ELIMINAR -->
+@if (modalEliminarAbierto()) {
+  <app-modal
+    titulo="¿Eliminar usuario?"
+    variante="small"
+    [cerrarAlClickFuera]="false"
+    (cerrar)="modalEliminarAbierto.set(false)"
+  >
+    <p class="modal-texto">
+      Se eliminará a <strong>{{ nombreCompleto(seleccionado()) }}</strong
+      >. Esta acción no se puede deshacer.
+    </p>
+    <ng-container acciones>
+      <button class="btn-cancelar" (click)="modalEliminarAbierto.set(false)">Cancelar</button>
+      <button class="btn-eliminar" (click)="eliminar()">Eliminar</button>
+    </ng-container>
+  </app-modal>
+}

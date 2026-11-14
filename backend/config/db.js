@@ -1,18 +1,27 @@
 const { Pool } = require('pg');
-require('dotenv').config();
+const env = require('./env');
+const { logger } = require('./logger');
 
 const db = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: false }
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
+  ssl: { rejectUnauthorized: false }, // TODO (S8): usar el certificado CA de Supabase
 });
 
-db.connect((err) => {
-  if (err) console.error('Error BD:', err);
-  else console.log('Conectado a Supabase');
-});
+// Un cliente inactivo que se cae no debe tumbar el proceso
+db.on('error', (err) => logger.error({ err }, 'Error en el pool de BD'));
+
+// Comprueba la conexión sin retener un cliente del pool
+db.verificarConexion = async () => {
+  try {
+    await db.query('SELECT 1');
+    logger.info('Conectado a la base de datos');
+  } catch (err) {
+    logger.error({ err }, 'No se pudo conectar a la base de datos');
+  }
+};
 
 module.exports = db;

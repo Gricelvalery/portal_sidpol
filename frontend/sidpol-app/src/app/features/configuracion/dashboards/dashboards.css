@@ -1,0 +1,13 @@
+.link-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1a6b30;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.link-dashboard:hover {
+  text-decoration: underline;
+}

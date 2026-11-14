@@ -13,7 +13,7 @@ class Posicion {
       nombre_posicion: this.nombre,
       descripcion_p: this.descripcion,
       id_area: this.idArea,
-      nombre_area: this.nombreArea
+      nombre_area: this.nombreArea,
     };
   }
 }

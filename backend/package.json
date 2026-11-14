@@ -1,0 +1,73 @@
+{
+  "name": "sidpol-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API REST del Portal SIDPOL (Express 5 + PostgreSQL/Supabase)",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write . --ignore-path ../.prettierignore --ignore-path ../.gitignore",
+    "format:check": "prettier --check . --ignore-path ../.prettierignore --ignore-path ../.gitignore"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "8.7.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
+    "pino": "10.4.0",
+    "pino-http": "11.0.0",
+    "swagger-ui-express": "5.0.1",
+    "yaml": "2.9.1"
+  },
+  "overrides": {
+    "encodeurl": "2.0.0",
+    "ip-address": "10.7.5",
+    "semver@^7": "7.8.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "9.1.2",
+    "globals": "17.13.0",
+    "jest": "30.5.2",
+    "pino-pretty": "13.2.0",
+    "prettier": "3.9.10",
+    "supertest": "7.3.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/tests"
+    ],
+    "setupFiles": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "clearMocks": true,
+    "collectCoverageFrom": [
+      "services/**/*.js",
+      "middlewares/**/*.js",
+      "controllers/**/*.js",
+      "validators/**/*.js",
+      "utils/**/*.js"
+    ],
+    "coverageReporters": [
+      "text-summary",
+      "text",
+      "lcov"
+    ]
+  }
+}

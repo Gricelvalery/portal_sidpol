@@ -1,0 +1,51 @@
+<div class="tabla-card">
+  <div class="tabla-toolbar">
+    <input
+      class="buscador"
+      type="text"
+      placeholder="Buscar..."
+      [value]="busqueda()"
+      (input)="alBuscar($event)"
+    />
+    <button class="btn-agregar" (click)="agregar.emit()">
+      <i class="fa-solid fa-circle-plus"></i> {{ textoAgregar() }}
+    </button>
+  </div>
+
+  @if (cargando()) {
+    <div class="cargando">Cargando...</div>
+  } @else {
+    <table class="tabla">
+      <thead>
+        <tr>
+          @for (columna of columnas(); track columna.titulo) {
+            <th>{{ columna.titulo }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track $index) {
+          <tr>
+            @for (columna of columnas(); track columna.titulo) {
+              <td [class]="columna.claseCelda ?? ''">
+                @if (columna.celda && plantillas().get(columna.celda); as plantilla) {
+                  <ng-container
+                    [ngTemplateOutlet]="plantilla"
+                    [ngTemplateOutletContext]="{ $implicit: fila }"
+                  />
+                } @else {
+                  {{ texto(fila, columna) }}
+                }
+              </td>
+            }
+          </tr>
+        }
+        @if (filas().length === 0) {
+          <tr>
+            <td [attr.colspan]="columnas().length" class="sin-datos">Sin resultados</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

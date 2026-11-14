@@ -1,0 +1,5 @@
+/* Submódulos usa un margen interior más amplio que el resto de pantallas */
+.config-page {
+  padding: clamp(24px, 4vw, 48px);
+  font-family: 'Mulish', sans-serif;
+}

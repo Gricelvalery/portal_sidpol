@@ -1,65 +1,36 @@
-const db = require('../config/db');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const env = require('../config/env');
 const jwtConfig = require('../config/jwt');
-const Usuario = require('../models/Usuario');
+const AppError = require('../utils/AppError');
+const usuarioRepository = require('../repositories/usuarioRepository');
+
+// Hash de relleno: si el usuario no existe igual se ejecuta un bcrypt.compare,
+// así el tiempo de respuesta no revela qué usernames existen.
+const HASH_RELLENO = bcrypt.hashSync('sidpol-usuario-inexistente', env.BCRYPT_COST);
 
 const authService = {
-
   async login(username, contrasenia) {
-    const result = await db.query(
-      'SELECT * FROM usuario WHERE username = $1 AND contrasenia_u = $2',
-      [username, contrasenia]
+    const credenciales = await usuarioRepository.buscarCredenciales(
+      String(username).trim().toLowerCase(),
     );
 
-    if (result.rows.length === 0) {
-      throw { status: 401, message: 'Credenciales incorrectas' };
+    const valida = await bcrypt.compare(contrasenia, credenciales?.hash || HASH_RELLENO);
+    if (!credenciales || !valida) {
+      throw AppError.unauthorized('Credenciales incorrectas');
+    }
+    if (!credenciales.autorizado) {
+      throw AppError.forbidden('Usuario no autorizado. Contacte al administrador.');
     }
 
-    const userRow = result.rows[0];
+    const { usuario } = credenciales;
+    const token = jwt.sign({ id: usuario.id, rol: usuario.rol }, jwtConfig.secret, {
+      expiresIn: jwtConfig.expiresIn,
+      algorithm: jwtConfig.algorithm,
+    });
 
-    if (!userRow.autorizado) {
-      throw { status: 403, message: 'Usuario no autorizado. Contacte al administrador.' };
-    }
-
-    const usuario = new Usuario(userRow);
-
-    const token = jwt.sign(
-      { id: usuario.id, rol: usuario.rol },
-      jwtConfig.secret,
-      { expiresIn: jwtConfig.expiresIn }
-    );
-
-    const permisos = await this.obtenerPermisos(usuario.id);
-
-    return {
-      token,
-      usuario: usuario.toJSON(),
-      permisos
-    };
+    return { token, usuario };
   },
-
-  async obtenerPermisos(userId) {
-    const result = await db.query(`
-      SELECT 
-        p.dashboards_id_d,
-        d.nombre_d,
-        s.id_sm,
-        s.nombre_sm,
-        s.ruta,
-        m.nombre_m
-      FROM permisos p
-      LEFT JOIN dashboards d 
-        ON p.dashboards_id_d = d.id_d
-      LEFT JOIN submodulos s 
-        ON d.submodulos_id_sm = s.id_sm
-      LEFT JOIN modulos m 
-        ON s.modulos_id_m = m.id_m
-      WHERE p.usuario_id_u = $1
-    `, [userId]);
-
-    return result.rows;
-  }
-
 };
 
 module.exports = authService;

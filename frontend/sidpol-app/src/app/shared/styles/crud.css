@@ -1,0 +1,276 @@
+/*
+ * Estilos comunes de las pantallas de configuración (tabla, modal y formularios).
+ * Antes estaban copiados en 5 hojas. Lo incluyen en sus styleUrl: <app-data-table>,
+ * <app-modal> y cada pantalla de configuración. Angular los encapsula por componente,
+ * así que no afectan a otras partes (por ejemplo, el modal de perfil del layout).
+ */
+
+.config-page {
+  padding: clamp(12px, 3vw, 24px);
+  font-family: 'Mulish', sans-serif;
+}
+
+.page-titulo {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  font-weight: 800;
+  color: #1a2e1a;
+  margin-bottom: 24px;
+}
+
+/* ---------- TABLA ---------- */
+.tabla-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.tabla-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8f0e8;
+  flex-wrap: wrap;
+}
+
+.buscador {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1.5px solid #d0e0d0;
+  border-radius: 8px;
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.95rem;
+  color: #1a2e1a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.buscador:focus {
+  border-color: #1a6b30;
+}
+
+.btn-agregar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1a6b30;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.btn-agregar:hover {
+  background: #155a27;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th {
+  background: #f4f6f4;
+  color: #1a2e1a;
+  padding: 14px 18px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tabla td {
+  padding: 13px 18px;
+  border-bottom: 1px solid #e8f0e8;
+  color: #1a2e1a;
+  font-size: 0.95rem;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr:hover {
+  background: #f8fbf8;
+}
+
+/* celda con varios botones de acción (usuarios) */
+.acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icono {
+  background: none;
+  border: none;
+  color: #1a6b30;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-icono:hover {
+  background: #e8f5e9;
+}
+
+.sin-datos {
+  text-align: center;
+  color: #888;
+  padding: 32px;
+}
+
+.cargando {
+  padding: 32px;
+  text-align: center;
+  color: #1a6b30;
+  font-weight: 600;
+}
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 400;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 14px;
+  padding: 32px;
+  width: min(480px, 90vw);
+  z-index: 500;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modal-small {
+  max-width: 400px;
+}
+
+.modal-permisos {
+  width: min(560px, 92vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-titulo {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1a6b30;
+  margin-bottom: 24px;
+}
+
+.modal-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* ---------- FORMULARIOS ---------- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.campo label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.campo input,
+.campo select {
+  padding: 12px 14px;
+  border: none;
+  border-bottom: 1.5px solid #ccc;
+  background: #f8f8f8;
+  border-radius: 6px 6px 0 0;
+  font-family: 'Mulish', sans-serif;
+  font-size: 0.95rem;
+  color: #1a2e1a;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-bottom-color: #1a6b30;
+}
+
+.campo input.input-error,
+.campo select.input-error {
+  border-bottom-color: #c0392b;
+  background: #fff7f6;
+}
+
+.mensaje-error {
+  color: #c0392b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.mensaje-error-general {
+  background: #fff7f6;
+  border: 1px solid #f0c5bf;
+  border-radius: 8px;
+  color: #a93226;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+}
+
+.btn-cancelar {
+  background: none;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  color: #555;
+  transition: border-color 0.2s;
+}
+
+.btn-cancelar:hover {
+  border-color: #999;
+}
+
+.btn-guardar {
+  background: #1a6b30;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-guardar:hover {
+  background: #155a27;
+}

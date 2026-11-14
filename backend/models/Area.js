@@ -9,7 +9,7 @@ class Area {
     return {
       id_area: this.id,
       nombre_area: this.nombre,
-      descripcion_area: this.descripcion
+      descripcion_area: this.descripcion,
     };
   }
 }

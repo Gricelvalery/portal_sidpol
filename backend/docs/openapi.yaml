@@ -1,0 +1,828 @@
+openapi: 3.0.3
+info:
+  title: API del Portal SIDPOL
+  version: 1.0.0
+  description: |
+    API REST del Portal SIDPOL (Express 5 + PostgreSQL/Supabase).
+
+    **Autenticación:** `POST /api/auth/login` devuelve un JWT (HS256, 2 h). Las demás
+    rutas exigen el header `Authorization: Bearer <token>`. En cada petición el backend
+    vuelve a leer el rol y el estado del usuario en la base, así que un cambio de rol o
+    una desautorización aplican de inmediato.
+
+    **Roles** (extensión `x-rol-requerido` en cada operación):
+    - `público`: sin token.
+    - `autenticado`: cualquier usuario con sesión; los listados se filtran según sus permisos.
+    - `autenticado + permiso`: además debe tener acceso a ese submódulo o dashboard (admin siempre pasa).
+    - `admin`: solo administradores.
+
+    **Errores:** el cuerpo es `{ "error": "mensaje" }`, o `{ "errors": [...] }` en
+    validaciones (400). Nunca se exponen mensajes internos ni de la base de datos.
+
+    **Límites:** 5 intentos fallidos de login cada 15 min por IP + usuario (30 por IP)
+    y un límite general por IP en `/api` (`RATE_LIMIT_API`).
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo
+tags:
+  - name: Autenticación
+  - name: Usuarios
+    description: Gestión de usuarios y permisos (solo admin)
+  - name: Módulos
+  - name: Submódulos
+  - name: Dashboards
+  - name: Áreas
+    description: Dependencias de la institución
+  - name: Posiciones
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Iniciar sesión
+      description: Devuelve un token JWT y los datos del usuario (sin contraseña).
+      x-rol-requerido: público
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Credenciales correctas
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResponse' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401':
+          description: Usuario o contraseña incorrectos (mismo mensaje en ambos casos)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: Usuario no autorizado por el administrador
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Listar usuarios
+      x-rol-requerido: admin
+      responses:
+        '200':
+          description: Lista de usuarios (sin contraseñas)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario
+      description: |
+        El backend genera `username` (primer nombre + "." + apellido paterno; si existe,
+        + inicial del materno; luego un número) y `correo_u` (`username@sidpol.pe`).
+        Todo usuario nuevo se crea con rol `user` y **sin permisos** (se ignora `rol_u`).
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioCrear' }
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsuarioGuardado' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/usuarios/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Usuarios]
+      summary: Editar usuario
+      description: |
+        No cambia `username`, `correo_u` ni la contraseña. Un admin no puede quitarse
+        su propio rol ni desautorizarse, y siempre debe quedar al menos un admin
+        autorizado (400).
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioEditar' }
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsuarioGuardado' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar usuario
+      description: Elimina sus permisos y el usuario en una transacción. No se puede eliminar a uno mismo ni al último admin (400).
+      x-rol-requerido: admin
+      responses:
+        '200':
+          description: Usuario eliminado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Exito' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/usuarios/{id}/permisos:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Usuarios]
+      summary: Ver permisos asignados
+      x-rol-requerido: admin
+      responses:
+        '200':
+          description: Permisos por submódulo y por dashboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PermisosAsignados' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Usuarios]
+      summary: Reemplazar permisos
+      description: |
+        Reemplaza todos los permisos del usuario en una transacción. Un submódulo da
+        acceso a todos sus dashboards (incluidos los futuros). Los submódulos de
+        configuración no se pueden asignar (400).
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PermisosAsignados' }
+      responses:
+        '200':
+          description: Permisos guardados
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Exito' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/modulos:
+    get:
+      tags: [Módulos]
+      summary: Listar módulos
+      description: Admin ve todos; un usuario solo los que contienen algún submódulo al que tiene acceso.
+      x-rol-requerido: autenticado
+      responses:
+        '200':
+          description: Lista de módulos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Modulo' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Módulos]
+      summary: Crear módulo
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuloInput' }
+      responses:
+        '201':
+          description: Módulo creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Modulo' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/modulos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Módulos]
+      summary: Editar módulo
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuloInput' }
+      responses:
+        '200':
+          description: Módulo actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Modulo' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/submodulos:
+    get:
+      tags: [Submódulos]
+      summary: Listar submódulos
+      description: Admin ve todos; un usuario solo los que tiene asignados o que contienen un dashboard permitido (nunca los de configuración).
+      x-rol-requerido: autenticado
+      responses:
+        '200':
+          description: Lista de submódulos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Submodulo' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Submódulos]
+      summary: Crear submódulo
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmoduloInput' }
+      responses:
+        '201':
+          description: Submódulo creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Submodulo' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/submodulos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Submódulos]
+      summary: Editar submódulo
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmoduloInput' }
+      responses:
+        '200':
+          description: Submódulo actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Submodulo' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/submodulos/{id}/dashboards:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Submódulos]
+      summary: Dashboards de un submódulo
+      description: Lo usa el visor. Un usuario solo ve los dashboards que tiene permitidos dentro del submódulo.
+      x-rol-requerido: autenticado + permiso del submódulo
+      responses:
+        '200':
+          description: Dashboards visibles del submódulo
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Dashboard' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinAccesoRecurso' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/dashboards:
+    get:
+      tags: [Dashboards]
+      summary: Listar dashboards
+      description: Admin ve todos; un usuario solo los permitidos (directamente o por su submódulo).
+      x-rol-requerido: autenticado
+      responses:
+        '200':
+          description: Lista de dashboards
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Dashboards]
+      summary: Crear dashboard
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DashboardInput' }
+      responses:
+        '201':
+          description: Dashboard creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/dashboards/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Dashboards]
+      summary: Obtener un dashboard
+      x-rol-requerido: autenticado + permiso del dashboard
+      responses:
+        '200':
+          description: Dashboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinAccesoRecurso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    put:
+      tags: [Dashboards]
+      summary: Editar dashboard
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DashboardInput' }
+      responses:
+        '200':
+          description: Dashboard actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/areas:
+    get:
+      tags: [Áreas]
+      summary: Listar áreas
+      x-rol-requerido: autenticado
+      responses:
+        '200':
+          description: Lista de áreas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Area' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Áreas]
+      summary: Crear área
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AreaInput' }
+      responses:
+        '201':
+          description: Área creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Area' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/areas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Áreas]
+      summary: Editar área
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AreaInput' }
+      responses:
+        '200':
+          description: Área actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Area' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+  /api/posiciones:
+    get:
+      tags: [Posiciones]
+      summary: Listar posiciones
+      x-rol-requerido: autenticado
+      responses:
+        '200':
+          description: Lista de posiciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Posicion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+    post:
+      tags: [Posiciones]
+      summary: Crear posición
+      x-rol-requerido: admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PosicionInput' }
+      responses:
+        '201':
+          description: Posición creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Posicion' }
+        '400': { $ref: '#/components/responses/Validacion' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { $ref: '#/components/responses/Conflicto' }
+        '429': { $ref: '#/components/responses/DemasiadasPeticiones' }
+        '500': { $ref: '#/components/responses/ErrorInterno' }
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      description: Identificador numérico (entero ≥ 1)
+      schema: { type: integer, minimum: 1 }
+
+  responses:
+    Validacion:
+      description: Datos inválidos (cuerpo, parámetros o regla de negocio)
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ErroresValidacion'
+              - $ref: '#/components/schemas/Error'
+    NoAutenticado:
+      description: Falta el token, es inválido o venció, o el usuario fue desautorizado o eliminado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SinPermiso:
+      description: El rol del usuario no tiene permiso para esta acción (requiere admin)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SinAccesoRecurso:
+      description: El usuario no tiene permiso sobre ese submódulo o dashboard
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoEncontrado:
+      description: El recurso no existe
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflicto:
+      description: Registro duplicado o en uso (restricción de la base de datos)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    DemasiadasPeticiones:
+      description: Se superó el límite de peticiones o de intentos de login
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ErrorInterno:
+      description: Error inesperado (el detalle solo queda en el log del servidor)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string, example: 'No tienes permisos para esta acción' }
+
+    ErroresValidacion:
+      type: object
+      required: [errors]
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              path: { type: string, example: nombre_m }
+              msg: { type: string, example: El nombre del módulo es requerido }
+
+    Exito:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string }
+
+    LoginRequest:
+      type: object
+      required: [username, contrasenia]
+      properties:
+        username: { type: string, maxLength: 80, example: juan.perez }
+        contrasenia: { type: string, format: password, maxLength: 72 }
+
+    LoginResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        token: { type: string, description: JWT HS256 válido por 2 horas }
+        usuario: { $ref: '#/components/schemas/Usuario' }
+
+    Usuario:
+      type: object
+      properties:
+        id_u: { type: integer, example: 10 }
+        nombres_u: { type: string, example: Juan Carlos }
+        apellido_paterno_u: { type: string, example: Pérez }
+        apellido_materno_u: { type: string, nullable: true, example: Cáceres }
+        username: { type: string, example: juan.perez }
+        correo_u: { type: string, format: email, example: juan.perez@sidpol.pe }
+        rol_u: { type: string, enum: [admin, user] }
+        autorizado: { type: boolean }
+        id_posicion: { type: integer, nullable: true }
+        nombre_posicion: { type: string, nullable: true }
+        nombre_area: { type: string, nullable: true }
+
+    UsuarioCrear:
+      type: object
+      required: [nombres_u, apellido_paterno_u, contrasenia_u, id_posicion]
+      properties:
+        nombres_u:
+          {
+            type: string,
+            maxLength: 60,
+            description: 'Solo letras y espacios; no vacío ni solo espacios',
+          }
+        apellido_paterno_u:
+          {
+            type: string,
+            maxLength: 100,
+            description: 'Solo letras y espacios; no vacío ni solo espacios',
+          }
+        apellido_materno_u:
+          {
+            type: string,
+            maxLength: 100,
+            nullable: true,
+            description: 'Opcional; vacío se guarda como null',
+          }
+        contrasenia_u:
+          {
+            type: string,
+            format: password,
+            minLength: 6,
+            maxLength: 72,
+            description: 'No puede ser solo espacios; se guarda con bcrypt',
+          }
+        id_posicion: { type: integer, minimum: 1 }
+        autorizado: { type: boolean, default: false }
+
+    UsuarioEditar:
+      type: object
+      required: [nombres_u, apellido_paterno_u, rol_u, id_posicion, autorizado]
+      properties:
+        nombres_u: { type: string, maxLength: 60 }
+        apellido_paterno_u: { type: string, maxLength: 100 }
+        apellido_materno_u: { type: string, maxLength: 100, nullable: true }
+        rol_u: { type: string, enum: [admin, user] }
+        id_posicion: { type: integer, minimum: 1 }
+        autorizado: { type: boolean }
+
+    UsuarioGuardado:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        usuario: { $ref: '#/components/schemas/Usuario' }
+
+    PermisosAsignados:
+      type: object
+      properties:
+        submodulos_ids:
+          type: array
+          items: { type: integer, minimum: 1 }
+          description: Submódulos completos (no se admiten los de configuración)
+        dashboards_ids:
+          type: array
+          items: { type: integer, minimum: 1 }
+
+    Area:
+      type: object
+      properties:
+        id_area: { type: integer }
+        nombre_area: { type: string }
+        descripcion_area: { type: string, nullable: true }
+    AreaInput:
+      type: object
+      required: [nombre_area, descripcion_area]
+      properties:
+        nombre_area: { type: string, maxLength: 100, description: No vacío ni solo espacios }
+        descripcion_area: { type: string, maxLength: 255, description: No vacío ni solo espacios }
+
+    Posicion:
+      type: object
+      properties:
+        id_posicion: { type: integer }
+        nombre_posicion: { type: string }
+        descripcion_p: { type: string, nullable: true }
+        id_area: { type: integer }
+        nombre_area: { type: string }
+    PosicionInput:
+      type: object
+      required: [nombre_posicion, id_area]
+      properties:
+        nombre_posicion: { type: string, maxLength: 100, description: No vacío ni solo espacios }
+        descripcion_p:
+          {
+            type: string,
+            maxLength: 255,
+            nullable: true,
+            description: 'Opcional; vacío se guarda como null',
+          }
+        id_area: { type: integer, minimum: 1 }
+
+    Modulo:
+      type: object
+      properties:
+        id_m: { type: integer }
+        nombre_m: { type: string }
+        descripcion_m: { type: string }
+        id_area: { type: integer, nullable: true }
+        nombre_area: { type: string, nullable: true }
+    ModuloInput:
+      type: object
+      required: [nombre_m, descripcion_m, id_area]
+      properties:
+        nombre_m: { type: string, maxLength: 100, description: No vacío ni solo espacios }
+        descripcion_m: { type: string, maxLength: 200, description: No vacío ni solo espacios }
+        id_area: { type: integer, minimum: 1 }
+
+    Submodulo:
+      type: object
+      properties:
+        id_sm: { type: integer }
+        nombre_sm: { type: string }
+        descripcion_sm: { type: string, nullable: true }
+        modulos_id_m: { type: integer }
+        nombre_m: { type: string, nullable: true }
+        ruta:
+          type: string
+          nullable: true
+          description: Ruta de la pantalla en el frontend; si es null, el menú abre visor/<id_sm>
+    SubmoduloInput:
+      type: object
+      required: [nombre_sm, descripcion_sm, modulos_id_m]
+      properties:
+        nombre_sm: { type: string, maxLength: 45, description: No vacío ni solo espacios }
+        descripcion_sm: { type: string, maxLength: 255, description: No vacío ni solo espacios }
+        modulos_id_m: { type: integer, minimum: 1 }
+
+    Pagina:
+      type: object
+      required: [nombre]
+      properties:
+        nombre: { type: string, maxLength: 100 }
+        seccion:
+          type: string
+          pattern: '^[A-Za-z0-9_-]{1,100}$'
+          description: Sección de Power BI (se agrega como pageName)
+
+    Dashboard:
+      type: object
+      properties:
+        id_d: { type: integer }
+        nombre_d: { type: string }
+        link_d: { type: string, format: uri }
+        submodulos_id_sm: { type: integer }
+        paginas:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/Pagina' }
+        nombre_sm: { type: string, nullable: true }
+        nombre_m: { type: string, nullable: true }
+    DashboardInput:
+      type: object
+      required: [nombre_d, link_d, submodulos_id_sm]
+      properties:
+        nombre_d: { type: string, maxLength: 100, description: No vacío ni solo espacios }
+        link_d:
+          type: string
+          format: uri
+          maxLength: 500
+          description: Solo https y dominios de POWERBI_HOSTS (por defecto app.powerbi.com)
+          example: https://app.powerbi.com/view?r=...
+        submodulos_id_sm: { type: integer, minimum: 1 }
+        paginas:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/Pagina' }

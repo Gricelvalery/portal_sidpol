@@ -1,28 +1,10 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-require('dotenv').config();
+// Punto de entrada: valida la configuración, arma la app y abre el puerto.
+const env = require('./config/env');
+const app = require('./app');
+const db = require('./config/db');
+const { logger } = require('./config/logger');
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// rutas
-app.use('/api/auth',       require('./routes/auth'));
-app.use('/api/usuario',    require('./routes/usuario'));
-app.use('/api/modulos',    require('./routes/modulos'));
-app.use('/api/submodulos', require('./routes/submodulos'));
-app.use('/api/dashboards', require('./routes/dashboards'));
-app.use('/api/area',       require('./routes/area'));
-app.use('/api/posicion',   require('./routes/posicion'));
-
-// manejo centralizado de errores (debe ir al final)
-const errorHandler = require('./middlewares/errorHandler');
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor en http://localhost:${PORT}`);
+app.listen(env.PORT, () => {
+  logger.info({ puerto: env.PORT }, `Servidor en http://localhost:${env.PORT}`);
+  db.verificarConexion();
 });
