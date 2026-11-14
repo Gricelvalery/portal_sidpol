@@ -4,7 +4,7 @@ const moduloController = {
 
   async listar(req, res) {
     try {
-      const modulos = await moduloService.listar();
+      const modulos = await moduloService.listar(req.usuario);
       res.json(modulos);
     } catch (err) {
       console.error(err);

@@ -4,7 +4,7 @@ const submoduloController = {
 
   async listar(req, res) {
     try {
-      const submodulos = await submoduloService.listar();
+      const submodulos = await submoduloService.listar(req.usuario);
       res.json(submodulos);
     } catch (err) {
       console.error(err);

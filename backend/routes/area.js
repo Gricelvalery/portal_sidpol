@@ -2,11 +2,11 @@ const express = require('express');
 const router = express.Router();
 const areaController = require('../controllers/areaController');
 const verificarToken = require('../middlewares/authMiddleware');
-const verificarRol = require('../middlewares/roleMiddleware');
+const checkRole = require('../middlewares/checkRole');
 const { areaValidator } = require('../validators/catalogoValidator');
 
 router.get('/', verificarToken, areaController.listar);
-router.post('/', verificarToken, verificarRol('Admin'), areaValidator, areaController.crear);
-router.put('/:id', verificarToken, verificarRol('Admin'), areaValidator, areaController.actualizar);
+router.post('/', verificarToken, checkRole('admin'), areaValidator, areaController.crear);
+router.put('/:id', verificarToken, checkRole('admin'), areaValidator, areaController.actualizar);
 
 module.exports = router;

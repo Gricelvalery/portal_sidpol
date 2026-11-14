@@ -15,6 +15,7 @@ export class Usuarios implements OnInit {
   usuariosFiltrados: any[] = [];
   posiciones: any[] = [];
   dashboards: any[] = [];
+  submodulosAsignables: any[] = [];
   cargando = true;
   busqueda = '';
   notificacion = '';
@@ -29,16 +30,22 @@ export class Usuarios implements OnInit {
   modalPermisosAbierto = false;
   usuarioSeleccionado: any = null;
   permisosSeleccionados: Set<number> = new Set();
+  submodulosSeleccionados: Set<number> = new Set();
 
-  form = {
-    nombre_u: '',
-    apellido_u: '',
-    correo_u: '',
-    contrasenia_u: '',
-    rol_u: 'User',
-    id_posicion: null as any,
-    autorizado: false
-  };
+  // username y correo los genera el backend; no se piden en el formulario
+  form = this.formVacio();
+
+  private formVacio() {
+    return {
+      nombres_u: '',
+      apellido_paterno_u: '',
+      apellido_materno_u: '',
+      contrasenia_u: '',
+      rol_u: 'user',
+      id_posicion: null as any,
+      autorizado: false
+    };
+  }
 
   constructor(private svc: ModulosService, private cdr: ChangeDetectorRef) {}
 
@@ -67,21 +74,25 @@ export class Usuarios implements OnInit {
     });
     this.svc.getPosiciones().subscribe({ next: (data) => { this.posiciones = data; } });
     this.svc.getDashboards().subscribe({ next: (data) => { this.dashboards = data; } });
+    // Los submódulos de configuración son exclusivos del admin: no se asignan
+    this.svc.getSubmodulos().subscribe({
+      next: (data) => {
+        this.submodulosAsignables = data.filter((s: any) => !(s.ruta || '').startsWith('configuracion/'));
+      }
+    });
   }
 
   buscar() {
     const q = this.busqueda.toLowerCase();
     this.usuariosFiltrados = this.usuarios.filter(u =>
-      u.nombre_u.toLowerCase().includes(q) ||
-      u.apellido_u.toLowerCase().includes(q) ||
-      u.correo_u.toLowerCase().includes(q) ||
-      (u.nombre_area || '').toLowerCase().includes(q)
+      [u.nombres_u, u.apellido_paterno_u, u.apellido_materno_u, u.username, u.correo_u, u.nombre_area]
+        .some(campo => (campo || '').toLowerCase().includes(q))
     );
   }
 
   abrirAgregar() {
     this.modoEditar = false;
-    this.form = { nombre_u: '', apellido_u: '', correo_u: '', contrasenia_u: '', rol_u: 'User', id_posicion: null, autorizado: false };
+    this.form = this.formVacio();
     this.erroresFormulario = {};
     this.errorFormularioGeneral = '';
     this.modalAbierto = true;
@@ -91,9 +102,9 @@ export class Usuarios implements OnInit {
     this.modoEditar = true;
     this.usuarioSeleccionado = u;
     this.form = {
-      nombre_u: u.nombre_u,
-      apellido_u: u.apellido_u,
-      correo_u: u.correo_u,
+      nombres_u: u.nombres_u,
+      apellido_paterno_u: u.apellido_paterno_u,
+      apellido_materno_u: u.apellido_materno_u || '',
       contrasenia_u: '',
       rol_u: u.rol_u,
       id_posicion: u.id_posicion,
@@ -138,32 +149,35 @@ export class Usuarios implements OnInit {
     this.erroresFormulario = {};
     this.errorFormularioGeneral = '';
     const errores: Record<string, string> = {};
-    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.correo_u);
-    const soloLetrasSinEspacios = /^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$/;
+    // Misma regla que el backend: letras y espacios simples ("Juan Carlos", "De la Cruz")
+    const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
+    const limpio = (v: string) => (v || '').replace(/\s+/g, ' ').trim();
+    this.form.nombres_u = limpio(this.form.nombres_u);
+    this.form.apellido_paterno_u = limpio(this.form.apellido_paterno_u);
+    this.form.apellido_materno_u = limpio(this.form.apellido_materno_u);
 
-    if (!this.form.nombre_u) {
-      errores['nombre_u'] = 'El nombre es requerido';
-    } else if (!soloLetrasSinEspacios.test(this.form.nombre_u)) {
-      errores['nombre_u'] = 'El nombre solo debe contener letras, sin números ni espacios';
+    if (!this.form.nombres_u) {
+      errores['nombres_u'] = 'Los nombres son requeridos';
+    } else if (!soloLetras.test(this.form.nombres_u)) {
+      errores['nombres_u'] = 'Los nombres solo deben contener letras';
     }
 
-    if (!this.form.apellido_u) {
-      errores['apellido_u'] = 'El apellido es requerido';
-    } else if (!soloLetrasSinEspacios.test(this.form.apellido_u)) {
-      errores['apellido_u'] = 'El apellido solo debe contener letras, sin números ni espacios';
+    if (!this.form.apellido_paterno_u) {
+      errores['apellido_paterno_u'] = 'El apellido paterno es requerido';
+    } else if (!soloLetras.test(this.form.apellido_paterno_u)) {
+      errores['apellido_paterno_u'] = 'El apellido paterno solo debe contener letras';
     }
-    if (!this.form.correo_u) {
-      errores['correo_u'] = 'El correo es requerido';
-    } else if (!correoValido) {
-      errores['correo_u'] = 'Correo inválido';
+
+    if (this.form.apellido_materno_u && !soloLetras.test(this.form.apellido_materno_u)) {
+      errores['apellido_materno_u'] = 'El apellido materno solo debe contener letras';
     }
     if (!this.form.id_posicion) errores['id_posicion'] = 'Selecciona una posición';
 
     if (!this.modoEditar) {
       if (!this.form.contrasenia_u) {
         errores['contrasenia_u'] = 'La contraseña es requerida';
-      } else if (this.form.contrasenia_u.length < 6) {
-        errores['contrasenia_u'] = 'La contraseña debe tener al menos 6 caracteres';
+      } else if (this.form.contrasenia_u.length < 6 || this.form.contrasenia_u.length > 72) {
+        errores['contrasenia_u'] = 'La contraseña debe tener entre 6 y 72 caracteres';
       }
     }
 
@@ -173,7 +187,8 @@ export class Usuarios implements OnInit {
     }
 
     if (this.modoEditar) {
-      this.svc.editarUsuario(this.usuarioSeleccionado.id_u, this.form).subscribe({
+      const { contrasenia_u, ...datos } = this.form;
+      this.svc.editarUsuario(this.usuarioSeleccionado.id_u, datos).subscribe({
         next: () => {
           this.cerrarModal();
           this.cargarDatos();
@@ -182,11 +197,13 @@ export class Usuarios implements OnInit {
         error: (err) => { this.aplicarErroresFormulario(err, 'Error al editar usuario'); }
       });
     } else {
-      this.svc.crearUsuario(this.form).subscribe({
-        next: () => {
+      // Todo usuario nuevo se crea con rol 'user' y sin permisos (lo fuerza el backend)
+      const { rol_u, ...datos } = this.form;
+      this.svc.crearUsuario(datos).subscribe({
+        next: (resp: any) => {
           this.cerrarModal();
           this.cargarDatos();
-          this.mostrarNotificacion('Usuario creado correctamente');
+          this.mostrarNotificacion('Usuario creado: ' + resp.usuario?.username + ' (' + resp.usuario?.correo_u + ')');
         },
         error: (err) => { this.aplicarErroresFormulario(err, 'Error al crear usuario'); }
       });
@@ -204,6 +221,10 @@ export class Usuarios implements OnInit {
         this.modalEliminarAbierto = false;
         this.cargarDatos();
         this.mostrarNotificacion('Usuario eliminado correctamente');
+      },
+      error: (err) => {
+        this.modalEliminarAbierto = false;
+        this.mostrarNotificacion(err.error?.error || 'Error al eliminar usuario', 'error');
       }
     });
   }
@@ -211,17 +232,16 @@ export class Usuarios implements OnInit {
   abrirPermisos(u: any) {
     this.usuarioSeleccionado = u;
     this.permisosSeleccionados = new Set();
+    this.submodulosSeleccionados = new Set();
     this.svc.getPermisos(u.id_u).subscribe({
       next: (data) => {
-        data.forEach((p: any) => {
-          if (p.dashboards_id_d) this.permisosSeleccionados.add(p.dashboards_id_d);
-        });
+        this.permisosSeleccionados = new Set(data.dashboards_ids);
+        this.submodulosSeleccionados = new Set(data.submodulos_ids);
         this.modalPermisosAbierto = true;
         this.cdr.detectChanges();
       },
       error: () => {
-        this.modalPermisosAbierto = true;
-        this.cdr.detectChanges();
+        this.mostrarNotificacion('Error al cargar permisos', 'error');
       }
     });
   }
@@ -238,15 +258,36 @@ export class Usuarios implements OnInit {
     return this.permisosSeleccionados.has(id_d);
   }
 
+  toggleSubmodulo(id_sm: number) {
+    if (this.submodulosSeleccionados.has(id_sm)) {
+      this.submodulosSeleccionados.delete(id_sm);
+    } else {
+      this.submodulosSeleccionados.add(id_sm);
+    }
+  }
+
+  tieneSubmodulo(id_sm: number): boolean {
+    return this.submodulosSeleccionados.has(id_sm);
+  }
+
+  esAdminUsuario(u: any): boolean {
+    return u?.rol_u === 'admin';
+  }
+
+  nombreCompleto(u: any): string {
+    return [u?.nombres_u, u?.apellido_paterno_u, u?.apellido_materno_u].filter(Boolean).join(' ');
+  }
+
   guardarPermisos() {
     const ids_d = Array.from(this.permisosSeleccionados);
-    this.svc.guardarPermisos(this.usuarioSeleccionado.id_u, ids_d, []).subscribe({
+    const ids_sm = Array.from(this.submodulosSeleccionados);
+    this.svc.guardarPermisos(this.usuarioSeleccionado.id_u, ids_d, ids_sm).subscribe({
       next: () => {
         this.modalPermisosAbierto = false;
         this.mostrarNotificacion('Permisos actualizados correctamente', 'exito');
       },
-      error: () => {
-        this.mostrarNotificacion('Error al guardar permisos', 'error');
+      error: (err) => {
+        this.mostrarNotificacion(err.error?.error || 'Error al guardar permisos', 'error');
       }
     });
   }

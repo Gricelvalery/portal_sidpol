@@ -1,16 +1,51 @@
 const db = require('../config/db');
 const Dashboard = require('../models/Dashboard');
+const permisoService = require('./permisoService');
+
+const SELECT_DASHBOARDS = `
+  SELECT d.*, s.nombre_sm, m.nombre_m
+    FROM dashboards d
+    LEFT JOIN submodulos s ON d.submodulos_id_sm = s.id_sm
+    LEFT JOIN modulos m ON s.modulos_id_m = m.id_m`;
 
 const dashboardService = {
 
-  async listar() {
-    const result = await db.query(`
-      SELECT d.*, s.nombre_sm, m.nombre_m
-      FROM dashboards d
-      LEFT JOIN submodulos s ON d.submodulos_id_sm = s.id_sm
-      LEFT JOIN modulos m ON s.modulos_id_m = m.id_m
-      ORDER BY d.id_d
-    `);
+  // Admin ve todo; user solo los dashboards permitidos.
+  async listar(usuario) {
+    if (permisoService.esAdmin(usuario)) {
+      const result = await db.query(`${SELECT_DASHBOARDS} ORDER BY d.id_d`);
+      return result.rows.map(row => new Dashboard(row).toJSON());
+    }
+    const ids = await permisoService.dashboardsAccesibles(usuario.id);
+    const result = await db.query(
+      `${SELECT_DASHBOARDS} WHERE d.id_d = ANY($1::int[]) ORDER BY d.id_d`,
+      [ids]
+    );
+    return result.rows.map(row => new Dashboard(row).toJSON());
+  },
+
+  // El acceso ya fue validado por checkPermission('dashboard').
+  async obtener(id) {
+    const result = await db.query(`${SELECT_DASHBOARDS} WHERE d.id_d = $1`, [id]);
+    if (result.rows.length === 0) throw { status: 404, message: 'Dashboard no encontrado' };
+    return new Dashboard(result.rows[0]).toJSON();
+  },
+
+  // Dashboards de un submódulo que el usuario puede ver.
+  // El acceso al submódulo ya fue validado por checkPermission('submodulo').
+  async listarPorSubmodulo(idSubmodulo, usuario) {
+    if (permisoService.esAdmin(usuario)) {
+      const result = await db.query(
+        `${SELECT_DASHBOARDS} WHERE d.submodulos_id_sm = $1 ORDER BY d.id_d`,
+        [idSubmodulo]
+      );
+      return result.rows.map(row => new Dashboard(row).toJSON());
+    }
+    const ids = await permisoService.dashboardsAccesibles(usuario.id);
+    const result = await db.query(
+      `${SELECT_DASHBOARDS} WHERE d.submodulos_id_sm = $1 AND d.id_d = ANY($2::int[]) ORDER BY d.id_d`,
+      [idSubmodulo, ids]
+    );
     return result.rows.map(row => new Dashboard(row).toJSON());
   },
 

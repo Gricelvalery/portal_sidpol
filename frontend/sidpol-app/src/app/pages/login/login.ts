@@ -85,7 +85,6 @@ export class Login implements OnInit {
 
         this.auth.guardarToken(data.token);
         this.auth.guardarUsuario(data.usuario);
-        this.auth.guardarPermisos(data.permisos || []);
 
         this.cdr.detectChanges();
 

@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../services/auth';
 import { ModulosService } from '../services/modulos';
 
@@ -30,55 +31,29 @@ export class Layout implements OnInit {
     this.cargarMenu();
   }
 
+  // El backend ya devuelve solo los módulos/submódulos que el usuario puede ver
+  // (admin: todo). Aquí solo se ordena y agrupa.
   cargarMenu() {
-    this.svc.getModulos().subscribe({
-      next: (modulos) => {
-        this.svc.getSubmodulos().subscribe({
-          next: (submodulos) => {
-            const esAdmin = this.auth.esAdmin();
-            const permisos = this.auth.getPermisos();
+    forkJoin({
+      modulos: this.svc.getModulos(),
+      submodulos: this.svc.getSubmodulos()
+    }).subscribe({
+      next: ({ modulos, submodulos }) => {
+        const porNombre = (campo: string) => (a: any, b: any) => a[campo].localeCompare(b[campo]);
+        const subsOrdenados = [...submodulos].sort(porNombre('nombre_sm'));
 
-            const subsFiltrados = esAdmin
-              ? submodulos
-              : submodulos.filter((s: any) =>
-                  permisos.some(p => p.submodulos_id_sm === s.id_sm || p.ruta === s.ruta)
-                );
+        this.modulosConSubs = [...modulos]
+          .sort(porNombre('nombre_m'))
+          .map((m: any) => ({
+            ...m,
+            abierto: false,
+            submodulos: subsOrdenados.filter((s: any) => s.modulos_id_m === m.id_m)
+          }))
+          .filter((m: any) => m.submodulos.length > 0 || this.auth.esAdmin());
 
-            const modulosFiltrados = modulos.filter((m: any) => { 
-            if ( 
-            !esAdmin && 
-            m.nombre_m.toLowerCase() === 'configuración' 
-            ) { 
-            return false; 
-            } 
-            if (esAdmin) { 
-            return true; 
-            }
-            return subsFiltrados.some( 
-            (s: any) => s.modulos_id_m === m.id_m 
-            ); 
-            });
-
-            const modulosOrdenados = modulosFiltrados.sort((a: any, b: any) =>
-              a.nombre_m.localeCompare(b.nombre_m)
-            );
-
-            const submodulosOrdenados = subsFiltrados.sort((a: any, b: any) =>
-              a.nombre_sm.localeCompare(b.nombre_sm)
-            );
-
-            this.modulosConSubs = modulosOrdenados.map((m: any) => ({
-              ...m,
-              abierto: false,
-              submodulos: submodulosOrdenados.filter((s: any) => s.modulos_id_m === m.id_m)
-            }));
-
-            this.cdr.detectChanges();
-          },
-          error: (err) => console.error('Error submodulos:', err)
-        });
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error modulos:', err)
+      error: (err) => console.error('Error al cargar el menú:', err)
     });
   }
 
@@ -133,11 +108,9 @@ export class Layout implements OnInit {
   }
 
   irA(s: any) {
-  console.log('irA llamado con:', s);
   this.menuAbierto = false;
 
   if (s.ruta) {
-    console.log('Navegando a:', '/' + s.ruta);
     this.router.navigate(['/' + s.ruta]);
     return;
   }
@@ -151,6 +124,7 @@ export class Layout implements OnInit {
   };
 
   const destino = mapaConfiguracion[s.nombre_sm];
-  this.router.navigate([destino || '/inicio']);
+  // Submódulo sin ruta propia → visor con sus dashboards
+  this.router.navigate([destino || `/visor/${s.id_sm}`]);
   }
 }

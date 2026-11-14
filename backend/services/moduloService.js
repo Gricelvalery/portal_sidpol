@@ -1,15 +1,27 @@
 const db = require('../config/db');
 const Modulo = require('../models/Modulo');
+const permisoService = require('./permisoService');
+
+const SELECT_MODULOS = `
+  SELECT m.*, a.nombre_area
+    FROM modulos m
+    LEFT JOIN area a ON m.id_area = a.id_area`;
 
 const moduloService = {
 
-  async listar() {
+  // Admin ve todo; user solo los módulos que contienen algún submódulo accesible.
+  async listar(usuario) {
+    if (permisoService.esAdmin(usuario)) {
+      const result = await db.query(`${SELECT_MODULOS} ORDER BY m.id_m`);
+      return result.rows.map(row => new Modulo(row).toJSON());
+    }
+    const ids = await permisoService.submodulosAccesibles(usuario.id);
     const result = await db.query(`
-      SELECT m.*, a.nombre_area 
-      FROM modulos m
-      LEFT JOIN area a ON m.id_area = a.id_area
-      ORDER BY m.id_m
-    `);
+      ${SELECT_MODULOS}
+       WHERE m.id_m IN (SELECT s.modulos_id_m FROM submodulos s WHERE s.id_sm = ANY($1::int[]))
+       ORDER BY m.id_m`,
+      [ids]
+    );
     return result.rows.map(row => new Modulo(row).toJSON());
   },
 

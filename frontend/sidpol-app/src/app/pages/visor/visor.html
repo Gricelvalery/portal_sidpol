@@ -1,4 +1,4 @@
-<div class="visor-wrapper" *ngIf="!cargando">
+<div class="visor-wrapper" *ngIf="!cargando && dashboards.length > 0">
 
   <div class="visor-header">
     <div class="visor-titulo">
@@ -51,7 +51,9 @@
   <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
 </div>
 
-<div *ngIf="!cargando && dashboards.length === 0" class="visor-vacio">
+<app-sin-accesos *ngIf="!cargando && sinAcceso"></app-sin-accesos>
+
+<div *ngIf="!cargando && !sinAcceso && dashboards.length === 0" class="visor-vacio">
   <i class="fa-solid fa-chart-bar"></i>
   <p>No hay dashboards disponibles</p>
 </div>

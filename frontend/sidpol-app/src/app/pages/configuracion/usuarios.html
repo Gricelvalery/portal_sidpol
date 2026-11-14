@@ -15,8 +15,9 @@
     <table *ngIf="!cargando" class="tabla">
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
+          <th>Usuario</th>
           <th>Email</th>
           <th>Autorizado</th>
           <th>Posición</th>
@@ -27,8 +28,9 @@
       </thead>
       <tbody>
         <tr *ngFor="let u of usuariosFiltrados">
-          <td>{{ u.nombre_u }}</td>
-          <td>{{ u.apellido_u }}</td>
+          <td>{{ u.nombres_u }}</td>
+          <td>{{ u.apellido_paterno_u }} {{ u.apellido_materno_u || '' }}</td>
+          <td>{{ u.username }}</td>
           <td>{{ u.correo_u }}</td>
           <td>
             <i class="fa-solid"
@@ -42,8 +44,8 @@
           <td>{{ u.nombre_area || '—' }}</td>
           <td>
             <span class="badge"
-              [class.badge-admin]="u.rol_u === 'Admin'"
-              [class.badge-user]="u.rol_u !== 'Admin'">
+              [class.badge-admin]="u.rol_u === 'admin'"
+              [class.badge-user]="u.rol_u !== 'admin'">
               {{ u.rol_u }}
             </span>
           </td>
@@ -60,7 +62,7 @@
           </td>
         </tr>
         <tr *ngIf="usuariosFiltrados.length === 0">
-          <td colspan="8" class="sin-datos">Sin resultados</td>
+          <td colspan="9" class="sin-datos">Sin resultados</td>
         </tr>
       </tbody>
     </table>
@@ -86,33 +88,48 @@
     {{ errorFormularioGeneral }}
   </div>
 
+  <div class="campo">
+    <label>Nombres*</label>
+    <input type="text" [(ngModel)]="form.nombres_u" (ngModelChange)="limpiarError('nombres_u')"
+      [class.input-error]="erroresFormulario['nombres_u']" placeholder="Ej: Juan Carlos"/>
+    <span class="mensaje-error" *ngIf="erroresFormulario['nombres_u']">
+      {{ erroresFormulario['nombres_u'] }}
+    </span>
+  </div>
+
   <div class="campo-fila">
     <div class="campo">
-      <label>Nombre*</label>
-      <input type="text" [(ngModel)]="form.nombre_u" (ngModelChange)="limpiarError('nombre_u')"
-        [class.input-error]="erroresFormulario['nombre_u']" placeholder="Nombre*"/>
-      <span class="mensaje-error" *ngIf="erroresFormulario['nombre_u']">
-        {{ erroresFormulario['nombre_u'] }}
+      <label>Apellido paterno*</label>
+      <input type="text" [(ngModel)]="form.apellido_paterno_u" (ngModelChange)="limpiarError('apellido_paterno_u')"
+        [class.input-error]="erroresFormulario['apellido_paterno_u']" placeholder="Ej: Pérez"/>
+      <span class="mensaje-error" *ngIf="erroresFormulario['apellido_paterno_u']">
+        {{ erroresFormulario['apellido_paterno_u'] }}
       </span>
     </div>
     <div class="campo">
-      <label>Apellido*</label>
-      <input type="text" [(ngModel)]="form.apellido_u" (ngModelChange)="limpiarError('apellido_u')"
-        [class.input-error]="erroresFormulario['apellido_u']" placeholder="Apellido*"/>
-      <span class="mensaje-error" *ngIf="erroresFormulario['apellido_u']">
-        {{ erroresFormulario['apellido_u'] }}
+      <label>Apellido materno</label>
+      <input type="text" [(ngModel)]="form.apellido_materno_u" (ngModelChange)="limpiarError('apellido_materno_u')"
+        [class.input-error]="erroresFormulario['apellido_materno_u']" placeholder="Ej: Cáceres"/>
+      <span class="mensaje-error" *ngIf="erroresFormulario['apellido_materno_u']">
+        {{ erroresFormulario['apellido_materno_u'] }}
       </span>
     </div>
   </div>
 
-  <div class="campo">
-    <label>Email*</label>
-    <input type="email" [(ngModel)]="form.correo_u" (ngModelChange)="limpiarError('correo_u')"
-      [class.input-error]="erroresFormulario['correo_u']" placeholder="Email*"/>
-    <span class="mensaje-error" *ngIf="erroresFormulario['correo_u']">
-      {{ erroresFormulario['correo_u'] }}
-    </span>
+  <!-- Username y correo los genera el backend y no cambian al editar -->
+  <div class="campo-fila" *ngIf="modoEditar">
+    <div class="campo">
+      <label>Usuario</label>
+      <input type="text" [value]="usuarioSeleccionado?.username" readonly/>
+    </div>
+    <div class="campo">
+      <label>Email</label>
+      <input type="text" [value]="usuarioSeleccionado?.correo_u" readonly/>
+    </div>
   </div>
+  <p class="campo-ayuda" *ngIf="!modoEditar">
+    El usuario y el correo (&#64;sidpol.pe) se generan automáticamente. El usuario se crea con rol <strong>user</strong> y sin permisos.
+  </p>
 
   <div class="campo" *ngIf="!modoEditar">
     <label>Contraseña*</label>
@@ -135,12 +152,16 @@
         {{ erroresFormulario['id_posicion'] }}
       </span>
     </div>
-    <div class="campo">
+    <div class="campo" *ngIf="modoEditar">
       <label>Rol</label>
-      <select [(ngModel)]="form.rol_u">
-        <option value="User">User</option>
-        <option value="Admin">Admin</option>
+      <select [(ngModel)]="form.rol_u" (ngModelChange)="limpiarError('rol_u')"
+        [class.input-error]="erroresFormulario['rol_u']">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
       </select>
+      <span class="mensaje-error" *ngIf="erroresFormulario['rol_u']">
+        {{ erroresFormulario['rol_u'] }}
+      </span>
     </div>
   </div>
 
@@ -160,10 +181,31 @@
 <div class="modal modal-permisos" *ngIf="modalPermisosAbierto">
   <h3 class="modal-titulo">Permisos de usuario</h3>
   <p class="permisos-subtitulo">
-    <strong>{{ usuarioSeleccionado?.nombre_u }} {{ usuarioSeleccionado?.apellido_u }}</strong>
+    <strong>{{ nombreCompleto(usuarioSeleccionado) }}</strong> · {{ usuarioSeleccionado?.username }}
   </p>
 
+  <div class="mensaje-info" *ngIf="esAdminUsuario(usuarioSeleccionado)">
+    <i class="fa-solid fa-shield-halved"></i>
+    Los administradores tienen acceso total automáticamente; estos permisos no se aplican.
+  </div>
+
   <div class="permisos-lista">
+
+    <!-- SECCION SUBMODULOS: da acceso a todos sus dashboards (incluidos los futuros) -->
+    <div class="permisos-seccion-titulo">
+      <i class="fa-solid fa-folder-open"></i> SUBMÓDULOS (acceso completo)
+    </div>
+    <div class="permisos-grupo">
+      <div *ngFor="let s of submodulosAsignables" class="permiso-item">
+        <input type="checkbox" [id]="'sm_' + s.id_sm"
+          [checked]="tieneSubmodulo(s.id_sm)"
+          (change)="toggleSubmodulo(s.id_sm)"/>
+        <label [for]="'sm_' + s.id_sm">{{ s.nombre_m }} — {{ s.nombre_sm }}</label>
+      </div>
+    </div>
+    <div *ngIf="submodulosAsignables.length === 0" class="sin-datos-small">
+      No hay submódulos registrados
+    </div>
 
     <!-- SECCION DASHBOARDS -->
     <div class="permisos-seccion-titulo">
@@ -195,7 +237,7 @@
 <div class="modal modal-small" *ngIf="modalEliminarAbierto">
   <h3 class="modal-titulo">¿Eliminar usuario?</h3>
   <p class="modal-texto">
-    Se eliminará a <strong>{{ usuarioSeleccionado?.nombre_u }} {{ usuarioSeleccionado?.apellido_u }}</strong>. Esta acción no se puede deshacer.
+    Se eliminará a <strong>{{ nombreCompleto(usuarioSeleccionado) }}</strong>. Esta acción no se puede deshacer.
   </p>
   <div class="modal-acciones">
     <button class="btn-cancelar" (click)="modalEliminarAbierto = false">Cancelar</button>

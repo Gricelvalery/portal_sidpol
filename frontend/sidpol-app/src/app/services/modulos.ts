@@ -41,6 +41,9 @@ export class ModulosService {
   getDashboards(): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/dashboards`);
   }
+  getDashboardsDeSubmodulo(idSubmodulo: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/submodulos/${idSubmodulo}/dashboards`);
+  }
   crearDashboard(data: any): Observable<any> {
     return this.http.post(`${this.base}/dashboards`, data);
   }
@@ -63,8 +66,8 @@ eliminarUsuario(id: number): Observable<any> {
 getPosiciones(): Observable<any[]> {
   return this.http.get<any[]>(`${this.base}/posicion`);
 }
-getPermisos(idUsuario: number): Observable<any[]> {
-  return this.http.get<any[]>(`${this.base}/usuario/${idUsuario}/permisos`);
+getPermisos(idUsuario: number): Observable<{ submodulos_ids: number[]; dashboards_ids: number[] }> {
+  return this.http.get<{ submodulos_ids: number[]; dashboards_ids: number[] }>(`${this.base}/usuario/${idUsuario}/permisos`);
 }
 guardarPermisos(idUsuario: number, dashboards_ids: number[], submodulos_ids: number[]): Observable<any> {
   return this.http.post(`${this.base}/usuario/${idUsuario}/permisos`, { dashboards_ids, submodulos_ids });

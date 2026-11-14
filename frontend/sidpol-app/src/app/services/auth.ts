@@ -20,10 +20,6 @@ export class AuthService {
     localStorage.setItem('token', token);
   }
 
-  guardarPermisos(permisos: any[]) {
-    localStorage.setItem('permisos', JSON.stringify(permisos));
-  }
-
   getUsuario() {
     return JSON.parse(localStorage.getItem('usuario') || 'null');
   }
@@ -32,25 +28,11 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  getPermisos(): any[] {
-    return JSON.parse(localStorage.getItem('permisos') || '[]');
-  }
-
+  // Solo controla qué se muestra; la autorización real la hace el backend
+  // (checkRole / checkPermission).
   esAdmin(): boolean {
     const u = this.getUsuario();
-    return u?.rol_u === 'Admin';
-  }
-
-  tieneAccesoRuta(ruta: string): boolean {
-    if (this.esAdmin()) return true;
-    const permisos = this.getPermisos();
-    return permisos.some(p => p.ruta === ruta);
-  }
-
-  tieneAccesoDashboard(id_d: number): boolean {
-    if (this.esAdmin()) return true;
-    const permisos = this.getPermisos();
-    return permisos.some(p => p.dashboards_id_d === id_d);
+    return String(u?.rol_u || '').toLowerCase() === 'admin';
   }
 
   estaLogueado() {

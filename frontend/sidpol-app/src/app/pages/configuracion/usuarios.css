@@ -451,3 +451,22 @@
   from { transform: translateY(20px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
+
+/* Fase 0: ayudas del formulario y aviso de admin en permisos */
+.campo-ayuda {
+  font-size: 0.85rem;
+  color: #5a6b5a;
+  margin: 4px 0 12px;
+}
+
+.mensaje-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: #e8f3ec;
+  color: #1a6b30;
+  font-size: 0.9rem;
+}

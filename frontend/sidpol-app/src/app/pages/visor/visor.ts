@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ModulosService } from '../../services/modulos';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SinAccesos } from '../../shared/sin-accesos';
 
 @Component({
   selector: 'app-visor',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SinAccesos],
   templateUrl: './visor.html',
   styleUrl: './visor.css'
 })
@@ -18,6 +19,7 @@ export class Visor implements OnInit {
   paginaActiva: any = null;
   embedUrl: SafeResourceUrl | null = null;
   cargando = true;
+  sinAcceso = false;
   submoduloId: number | null = null;
 
   constructor(
@@ -34,19 +36,32 @@ export class Visor implements OnInit {
     });
   }
 
+  // El backend filtra por permisos; con id de submódulo valida acceso (403 si no tiene).
   cargarDashboards() {
-    this.svc.getDashboards().subscribe({
+    this.cargando = true;
+    this.sinAcceso = false;
+    this.dashboards = [];
+    this.dashboardSeleccionado = null;
+    this.embedUrl = null;
+
+    const peticion = this.submoduloId
+      ? this.svc.getDashboardsDeSubmodulo(this.submoduloId)
+      : this.svc.getDashboards();
+
+    peticion.subscribe({
       next: (data) => {
-        this.dashboards = this.submoduloId
-          ? data.filter(d => d.submodulos_id_sm === this.submoduloId)
-          : data;
+        this.dashboards = data;
         if (this.dashboards.length > 0) {
           this.seleccionarDashboard(this.dashboards[0]);
         }
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: () => { this.cargando = false; }
+      error: (err) => {
+        this.sinAcceso = err.status === 403;
+        this.cargando = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
