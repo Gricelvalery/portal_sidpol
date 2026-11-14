@@ -6,11 +6,11 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AreaService } from '../../../core/api/area.service';
 import { ModuloService } from '../../../core/api/modulo.service';
-import { Area, Modulo, ModuloPayload } from '../../../core/models';
+import { Area, Modulo } from '../../../core/models';
 import { NotificacionService } from '../../../core/notificaciones/notificacion.service';
 import {
   CeldaTabla,
@@ -19,11 +19,21 @@ import {
 } from '../../../shared/components/data-table/data-table';
 import { Modal } from '../../../shared/components/modal/modal';
 import { filtrarPorTexto } from '../../../shared/utils/busqueda';
-import { EstadoFormulario } from '../../../shared/utils/estado-formulario';
+import { EstadoFormulario, MensajesValidacion } from '../../../shared/utils/estado-formulario';
+import { textoObligatorio } from '../../../shared/validators/texto.validators';
+
+const MENSAJES: MensajesValidacion = {
+  nombre_m: { required: 'El nombre es requerido', soloEspacios: 'El nombre es requerido' },
+  descripcion_m: {
+    required: 'La descripción es requerida',
+    soloEspacios: 'La descripción es requerida',
+  },
+  id_area: { required: 'Selecciona un área' },
+};
 
 @Component({
   selector: 'app-modulos',
-  imports: [FormsModule, DataTable, CeldaTabla, Modal],
+  imports: [ReactiveFormsModule, DataTable, CeldaTabla, Modal],
   templateUrl: './modulos.html',
   styleUrls: ['../../../shared/styles/crud.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,7 +61,11 @@ export class Modulos implements OnInit {
   protected readonly modalAbierto = signal(false);
   protected readonly editando = signal<Modulo | null>(null);
   protected readonly estado = new EstadoFormulario();
-  protected form: ModuloPayload = { nombre_m: '', descripcion_m: '', id_area: null };
+  protected readonly form = new FormGroup({
+    nombre_m: new FormControl('', { nonNullable: true, validators: textoObligatorio }),
+    descripcion_m: new FormControl('', { nonNullable: true, validators: textoObligatorio }),
+    id_area: new FormControl<number | null>(null, { validators: Validators.required }),
+  });
 
   ngOnInit(): void {
     this.cargarDatos();
@@ -70,14 +84,14 @@ export class Modulos implements OnInit {
 
   protected abrirAgregar(): void {
     this.editando.set(null);
-    this.form = { nombre_m: '', descripcion_m: '', id_area: null };
+    this.form.reset();
     this.estado.reiniciar();
     this.modalAbierto.set(true);
   }
 
   protected abrirEditar(m: Modulo): void {
     this.editando.set(m);
-    this.form = { nombre_m: m.nombre_m, descripcion_m: m.descripcion_m, id_area: m.id_area };
+    this.form.reset({ nombre_m: m.nombre_m, descripcion_m: m.descripcion_m, id_area: m.id_area });
     this.estado.reiniciar();
     this.modalAbierto.set(true);
   }
@@ -88,17 +102,14 @@ export class Modulos implements OnInit {
   }
 
   protected guardar(): void {
-    const valido = this.estado.validar({
-      ...(!this.form.nombre_m.trim() && { nombre_m: 'El nombre es requerido' }),
-      ...(!this.form.descripcion_m.trim() && { descripcion_m: 'La descripción es requerida' }),
-      ...(!this.form.id_area && { id_area: 'Selecciona un área' }),
-    });
-    if (!valido) return;
+    if (!this.estado.validarFormulario(this.form, MENSAJES)) return;
+    const { nombre_m, descripcion_m, id_area } = this.form.getRawValue();
+    const datos = { nombre_m: nombre_m.trim(), descripcion_m: descripcion_m.trim(), id_area };
 
     const actual = this.editando();
     const peticion = actual
-      ? this.moduloService.editar(actual.id_m, this.form)
-      : this.moduloService.crear(this.form);
+      ? this.moduloService.editar(actual.id_m, datos)
+      : this.moduloService.crear(datos);
     peticion.subscribe({
       next: () => {
         this.cerrarModal();

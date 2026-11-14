@@ -26,8 +26,8 @@
       <label>Nombre*</label>
       <input
         type="text"
-        [(ngModel)]="form.nombre_area"
-        (ngModelChange)="estado.limpiar('nombre_area')"
+        [formControl]="form.controls.nombre_area"
+        (input)="estado.limpiar('nombre_area')"
         [class.input-error]="estado.errores()['nombre_area']"
         placeholder="Nombre*"
       />
@@ -39,8 +39,8 @@
       <label>Descripción*</label>
       <input
         type="text"
-        [(ngModel)]="form.descripcion_area"
-        (ngModelChange)="estado.limpiar('descripcion_area')"
+        [formControl]="form.controls.descripcion_area"
+        (input)="estado.limpiar('descripcion_area')"
         [class.input-error]="estado.errores()['descripcion_area']"
         placeholder="Descripción*"
       />

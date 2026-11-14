@@ -40,7 +40,15 @@ const camposNombre = [
 // Crear: el rol se fuerza a 'user' en el servicio; username y correo se generan en el backend.
 const crearUsuarioValidator = [
   ...camposNombre,
+  // La contraseña NO se recorta (los espacios son parte de ella), pero no puede
+  // estar formada solo por espacios.
   body('contrasenia_u')
+    .isString()
+    .withMessage('La contraseña es requerida')
+    .bail()
+    .custom((valor) => valor.trim().length > 0)
+    .withMessage('La contraseña no puede contener solo espacios')
+    .bail()
     .isLength({ min: 6, max: 72 })
     .withMessage('La contraseña debe tener entre 6 y 72 caracteres'),
   body('autorizado').optional().isBoolean().withMessage('Valor inválido').toBoolean(),

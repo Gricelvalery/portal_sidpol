@@ -30,8 +30,8 @@
       <label>Nombre*</label>
       <input
         type="text"
-        [(ngModel)]="form.nombre_sm"
-        (ngModelChange)="estado.limpiar('nombre_sm')"
+        [formControl]="form.controls.nombre_sm"
+        (input)="estado.limpiar('nombre_sm')"
         [class.input-error]="estado.errores()['nombre_sm']"
         placeholder="Nombre*"
       />
@@ -43,8 +43,8 @@
       <label>Descripción*</label>
       <input
         type="text"
-        [(ngModel)]="form.descripcion_sm"
-        (ngModelChange)="estado.limpiar('descripcion_sm')"
+        [formControl]="form.controls.descripcion_sm"
+        (input)="estado.limpiar('descripcion_sm')"
         [class.input-error]="estado.errores()['descripcion_sm']"
         placeholder="Descripción*"
       />
@@ -55,8 +55,8 @@
     <div class="campo">
       <label>Módulo*</label>
       <select
-        [(ngModel)]="form.modulos_id_m"
-        (ngModelChange)="estado.limpiar('modulos_id_m')"
+        [formControl]="form.controls.modulos_id_m"
+        (change)="estado.limpiar('modulos_id_m')"
         [class.input-error]="estado.errores()['modulos_id_m']"
       >
         <option [ngValue]="null">Módulo*</option>

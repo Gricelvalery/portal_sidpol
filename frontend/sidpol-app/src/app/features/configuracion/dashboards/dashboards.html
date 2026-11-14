@@ -36,8 +36,8 @@
       <label>Nombre*</label>
       <input
         type="text"
-        [(ngModel)]="form.nombre_d"
-        (ngModelChange)="estado.limpiar('nombre_d')"
+        [formControl]="form.controls.nombre_d"
+        (input)="estado.limpiar('nombre_d')"
         [class.input-error]="estado.errores()['nombre_d']"
         placeholder="Nombre*"
       />
@@ -49,8 +49,8 @@
       <label>Link*</label>
       <input
         type="text"
-        [(ngModel)]="form.link_d"
-        (ngModelChange)="estado.limpiar('link_d')"
+        [formControl]="form.controls.link_d"
+        (input)="estado.limpiar('link_d')"
         [class.input-error]="estado.errores()['link_d']"
         placeholder="https://..."
       />
@@ -61,8 +61,8 @@
     <div class="campo">
       <label>Submódulo*</label>
       <select
-        [(ngModel)]="form.submodulos_id_sm"
-        (ngModelChange)="estado.limpiar('submodulos_id_sm')"
+        [formControl]="form.controls.submodulos_id_sm"
+        (change)="estado.limpiar('submodulos_id_sm')"
         [class.input-error]="estado.errores()['submodulos_id_sm']"
       >
         <option [ngValue]="null">Seleccionar submódulo</option>

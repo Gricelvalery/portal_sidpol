@@ -6,11 +6,11 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ModuloService } from '../../../core/api/modulo.service';
 import { SubmoduloService } from '../../../core/api/submodulo.service';
-import { Modulo, Submodulo, SubmoduloPayload } from '../../../core/models';
+import { Modulo, Submodulo } from '../../../core/models';
 import { NotificacionService } from '../../../core/notificaciones/notificacion.service';
 import {
   CeldaTabla,
@@ -19,11 +19,21 @@ import {
 } from '../../../shared/components/data-table/data-table';
 import { Modal } from '../../../shared/components/modal/modal';
 import { filtrarPorTexto } from '../../../shared/utils/busqueda';
-import { EstadoFormulario } from '../../../shared/utils/estado-formulario';
+import { EstadoFormulario, MensajesValidacion } from '../../../shared/utils/estado-formulario';
+import { textoObligatorio } from '../../../shared/validators/texto.validators';
+
+const MENSAJES: MensajesValidacion = {
+  nombre_sm: { required: 'El nombre es requerido', soloEspacios: 'El nombre es requerido' },
+  descripcion_sm: {
+    required: 'La descripción es requerida',
+    soloEspacios: 'La descripción es requerida',
+  },
+  modulos_id_m: { required: 'Selecciona un módulo' },
+};
 
 @Component({
   selector: 'app-submodulos',
-  imports: [FormsModule, DataTable, CeldaTabla, Modal],
+  imports: [ReactiveFormsModule, DataTable, CeldaTabla, Modal],
   templateUrl: './submodulos.html',
   styleUrls: ['../../../shared/styles/crud.css', './submodulos.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,7 +61,11 @@ export class Submodulos implements OnInit {
   protected readonly modalAbierto = signal(false);
   protected readonly editando = signal<Submodulo | null>(null);
   protected readonly estado = new EstadoFormulario();
-  protected form: SubmoduloPayload = { nombre_sm: '', descripcion_sm: '', modulos_id_m: null };
+  protected readonly form = new FormGroup({
+    nombre_sm: new FormControl('', { nonNullable: true, validators: textoObligatorio }),
+    descripcion_sm: new FormControl('', { nonNullable: true, validators: textoObligatorio }),
+    modulos_id_m: new FormControl<number | null>(null, { validators: Validators.required }),
+  });
 
   ngOnInit(): void {
     this.cargarDatos();
@@ -73,18 +87,18 @@ export class Submodulos implements OnInit {
 
   protected abrirAgregar(): void {
     this.editando.set(null);
-    this.form = { nombre_sm: '', descripcion_sm: '', modulos_id_m: null };
+    this.form.reset();
     this.estado.reiniciar();
     this.modalAbierto.set(true);
   }
 
   protected abrirEditar(s: Submodulo): void {
     this.editando.set(s);
-    this.form = {
+    this.form.reset({
       nombre_sm: s.nombre_sm,
       descripcion_sm: s.descripcion_sm ?? '',
       modulos_id_m: s.modulos_id_m,
-    };
+    });
     this.estado.reiniciar();
     this.modalAbierto.set(true);
   }
@@ -95,17 +109,18 @@ export class Submodulos implements OnInit {
   }
 
   protected guardar(): void {
-    const valido = this.estado.validar({
-      ...(!this.form.nombre_sm.trim() && { nombre_sm: 'El nombre es requerido' }),
-      ...(!this.form.descripcion_sm.trim() && { descripcion_sm: 'La descripción es requerida' }),
-      ...(!this.form.modulos_id_m && { modulos_id_m: 'Selecciona un módulo' }),
-    });
-    if (!valido) return;
+    if (!this.estado.validarFormulario(this.form, MENSAJES)) return;
+    const { nombre_sm, descripcion_sm, modulos_id_m } = this.form.getRawValue();
+    const datos = {
+      nombre_sm: nombre_sm.trim(),
+      descripcion_sm: descripcion_sm.trim(),
+      modulos_id_m,
+    };
 
     const actual = this.editando();
     const peticion = actual
-      ? this.submoduloService.editar(actual.id_sm, this.form)
-      : this.submoduloService.crear(this.form);
+      ? this.submoduloService.editar(actual.id_sm, datos)
+      : this.submoduloService.crear(datos);
     peticion.subscribe({
       next: () => {
         this.cerrarModal();

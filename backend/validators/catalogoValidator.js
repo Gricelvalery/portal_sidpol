@@ -21,7 +21,9 @@ const textoOpcional = (campo, max) =>
     .withMessage('Valor inválido')
     .trim()
     .isLength({ max })
-    .withMessage(`Máximo ${max} caracteres`);
+    .withMessage(`Máximo ${max} caracteres`)
+    // Un opcional vacío o con solo espacios se guarda como null, no como ''
+    .customSanitizer((valor) => (valor === '' ? null : valor));
 
 const enteroObligatorio = (campo, mensaje) =>
   body(campo).isInt({ min: 1 }).withMessage(mensaje).toInt();

@@ -1,8 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import { ErrorApi } from '../../core/models';
 
 export type ErroresCampos = Record<string, string>;
+
+/**
+ * Mensaje a mostrar por cada validador de cada campo, en orden de prioridad:
+ * { nombre_m: { required: 'El nombre es requerido', soloEspacios: '...' } }
+ */
+export type MensajesValidacion = Record<string, Record<string, string>>;
 
 /**
  * Mensaje de un error "de negocio" del backend (400, 404 o 409), p. ej.
@@ -33,6 +40,24 @@ export class EstadoFormulario {
     this.errores.set(errores);
     this.general.set('');
     return Object.keys(errores).length === 0;
+  }
+
+  /**
+   * Valida un FormGroup (Reactive Forms) y traduce el primer error de cada campo
+   * a su mensaje. Los controles deshabilitados no se validan.
+   * Devuelve true si el formulario es válido.
+   */
+  validarFormulario(form: FormGroup, mensajes: MensajesValidacion): boolean {
+    form.markAllAsTouched();
+    form.updateValueAndValidity();
+    const errores: ErroresCampos = {};
+    for (const [campo, porValidador] of Object.entries(mensajes)) {
+      const control = form.get(campo);
+      if (!control || control.disabled || !control.errors) continue;
+      const validador = Object.keys(porValidador).find((clave) => control.errors?.[clave]);
+      errores[campo] = validador ? porValidador[validador] : 'Valor inválido';
+    }
+    return this.validar(errores) && form.valid;
   }
 
   limpiar(campo: string): void {

@@ -56,8 +56,8 @@
       <label>Nombres*</label>
       <input
         type="text"
-        [(ngModel)]="form.nombres_u"
-        (ngModelChange)="estado.limpiar('nombres_u')"
+        [formControl]="form.controls.nombres_u"
+        (input)="estado.limpiar('nombres_u')"
         [class.input-error]="estado.errores()['nombres_u']"
         placeholder="Ej: Juan Carlos"
       />
@@ -71,8 +71,8 @@
         <label>Apellido paterno*</label>
         <input
           type="text"
-          [(ngModel)]="form.apellido_paterno_u"
-          (ngModelChange)="estado.limpiar('apellido_paterno_u')"
+          [formControl]="form.controls.apellido_paterno_u"
+          (input)="estado.limpiar('apellido_paterno_u')"
           [class.input-error]="estado.errores()['apellido_paterno_u']"
           placeholder="Ej: Pérez"
         />
@@ -84,8 +84,8 @@
         <label>Apellido materno</label>
         <input
           type="text"
-          [(ngModel)]="form.apellido_materno_u"
-          (ngModelChange)="estado.limpiar('apellido_materno_u')"
+          [formControl]="form.controls.apellido_materno_u"
+          (input)="estado.limpiar('apellido_materno_u')"
           [class.input-error]="estado.errores()['apellido_materno_u']"
           placeholder="Ej: Cáceres"
         />
@@ -117,8 +117,8 @@
         <label>Contraseña*</label>
         <input
           type="password"
-          [(ngModel)]="form.contrasenia_u"
-          (ngModelChange)="estado.limpiar('contrasenia_u')"
+          [formControl]="form.controls.contrasenia_u"
+          (input)="estado.limpiar('contrasenia_u')"
           [class.input-error]="estado.errores()['contrasenia_u']"
           placeholder="Contraseña*"
         />
@@ -132,8 +132,8 @@
       <div class="campo">
         <label>Posición</label>
         <select
-          [(ngModel)]="form.id_posicion"
-          (ngModelChange)="estado.limpiar('id_posicion')"
+          [formControl]="form.controls.id_posicion"
+          (change)="estado.limpiar('id_posicion')"
           [class.input-error]="estado.errores()['id_posicion']"
         >
           <option [ngValue]="null">Seleccionar posición</option>
@@ -149,8 +149,8 @@
         <div class="campo">
           <label>Rol</label>
           <select
-            [(ngModel)]="form.rol_u"
-            (ngModelChange)="estado.limpiar('rol_u')"
+            [formControl]="form.controls.rol_u"
+            (change)="estado.limpiar('rol_u')"
             [class.input-error]="estado.errores()['rol_u']"
           >
             <option value="user">user</option>
@@ -164,7 +164,7 @@
     </div>
 
     <div class="campo-checkbox">
-      <input type="checkbox" id="autorizado" [(ngModel)]="form.autorizado" />
+      <input type="checkbox" id="autorizado" [formControl]="form.controls.autorizado" />
       <label for="autorizado">Autorizado</label>
     </div>
 

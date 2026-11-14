@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { DashboardService } from '../../../core/api/dashboard.service';
 import { PosicionService } from '../../../core/api/posicion.service';
@@ -22,20 +22,11 @@ import {
 import { Modal } from '../../../shared/components/modal/modal';
 import { filtrarPorTexto } from '../../../shared/utils/busqueda';
 import {
-  ErroresCampos,
   EstadoFormulario,
+  MensajesValidacion,
   mensajeErrorNegocio,
 } from '../../../shared/utils/estado-formulario';
-
-interface FormUsuario {
-  nombres_u: string;
-  apellido_paterno_u: string;
-  apellido_materno_u: string;
-  contrasenia_u: string;
-  rol_u: Rol;
-  id_posicion: number | null;
-  autorizado: boolean;
-}
+import { textoObligatorio } from '../../../shared/validators/texto.validators';
 
 interface GrupoDashboards {
   key: string;
@@ -45,19 +36,32 @@ interface GrupoDashboards {
 // Misma regla que el backend: letras y espacios simples ("Juan Carlos", "De la Cruz")
 const SOLO_LETRAS = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü]+( [A-Za-zÁÉÍÓÚáéíóúÑñÜü]+)*$/;
 const limpiarEspacios = (v: string) => (v || '').replace(/\s+/g, ' ').trim();
-const formVacio = (): FormUsuario => ({
-  nombres_u: '',
-  apellido_paterno_u: '',
-  apellido_materno_u: '',
-  contrasenia_u: '',
-  rol_u: 'user',
-  id_posicion: null,
-  autorizado: false,
-});
+
+const MENSAJES: MensajesValidacion = {
+  nombres_u: {
+    required: 'Los nombres son requeridos',
+    soloEspacios: 'Los nombres son requeridos',
+    pattern: 'Los nombres solo deben contener letras',
+  },
+  apellido_paterno_u: {
+    required: 'El apellido paterno es requerido',
+    soloEspacios: 'El apellido paterno es requerido',
+    pattern: 'El apellido paterno solo debe contener letras',
+  },
+  apellido_materno_u: { pattern: 'El apellido materno solo debe contener letras' },
+  // La contraseña no se recorta: los espacios son parte de ella, pero no puede ser solo espacios
+  contrasenia_u: {
+    required: 'La contraseña es requerida',
+    soloEspacios: 'La contraseña no puede contener solo espacios',
+    minlength: 'La contraseña debe tener entre 6 y 72 caracteres',
+    maxlength: 'La contraseña debe tener entre 6 y 72 caracteres',
+  },
+  id_posicion: { required: 'Selecciona una posición' },
+};
 
 @Component({
   selector: 'app-usuarios',
-  imports: [FormsModule, DataTable, CeldaTabla, Modal],
+  imports: [ReactiveFormsModule, DataTable, CeldaTabla, Modal],
   templateUrl: './usuarios.html',
   styleUrls: ['../../../shared/styles/crud.css', './usuarios.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -119,7 +123,27 @@ export class Usuarios implements OnInit {
   protected readonly modalPermisosAbierto = signal(false);
   protected readonly modalEliminarAbierto = signal(false);
   protected readonly estado = new EstadoFormulario();
-  protected form: FormUsuario = formVacio();
+  protected readonly form = new FormGroup({
+    nombres_u: new FormControl('', {
+      nonNullable: true,
+      validators: [...textoObligatorio, Validators.pattern(SOLO_LETRAS)],
+    }),
+    apellido_paterno_u: new FormControl('', {
+      nonNullable: true,
+      validators: [...textoObligatorio, Validators.pattern(SOLO_LETRAS)],
+    }),
+    apellido_materno_u: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.pattern(SOLO_LETRAS),
+    }),
+    contrasenia_u: new FormControl('', {
+      nonNullable: true,
+      validators: [...textoObligatorio, Validators.minLength(6), Validators.maxLength(72)],
+    }),
+    rol_u: new FormControl<Rol>('user', { nonNullable: true }),
+    id_posicion: new FormControl<number | null>(null, { validators: Validators.required }),
+    autorizado: new FormControl(false, { nonNullable: true }),
+  });
 
   protected readonly permisosDashboards = signal<ReadonlySet<number>>(new Set());
   protected readonly permisosSubmodulos = signal<ReadonlySet<number>>(new Set());
@@ -160,7 +184,8 @@ export class Usuarios implements OnInit {
 
   protected abrirAgregar(): void {
     this.modoEditar.set(false);
-    this.form = formVacio();
+    this.form.reset();
+    this.form.controls.contrasenia_u.enable();
     this.estado.reiniciar();
     this.modalAbierto.set(true);
   }
@@ -168,7 +193,7 @@ export class Usuarios implements OnInit {
   protected abrirEditar(u: Usuario): void {
     this.modoEditar.set(true);
     this.seleccionado.set(u);
-    this.form = {
+    this.form.reset({
       nombres_u: u.nombres_u,
       apellido_paterno_u: u.apellido_paterno_u,
       apellido_materno_u: u.apellido_materno_u || '',
@@ -176,7 +201,9 @@ export class Usuarios implements OnInit {
       rol_u: u.rol_u,
       id_posicion: u.id_posicion,
       autorizado: u.autorizado || false,
-    };
+    });
+    // Al editar no se cambia la contraseña: el control deshabilitado no se valida
+    this.form.controls.contrasenia_u.disable();
     this.estado.reiniciar();
     this.modalAbierto.set(true);
   }
@@ -186,37 +213,17 @@ export class Usuarios implements OnInit {
     this.estado.reiniciar();
   }
 
-  private validarFormulario(): ErroresCampos {
-    const f = this.form;
-    f.nombres_u = limpiarEspacios(f.nombres_u);
-    f.apellido_paterno_u = limpiarEspacios(f.apellido_paterno_u);
-    f.apellido_materno_u = limpiarEspacios(f.apellido_materno_u);
-
-    const errores: ErroresCampos = {};
-    if (!f.nombres_u) errores['nombres_u'] = 'Los nombres son requeridos';
-    else if (!SOLO_LETRAS.test(f.nombres_u))
-      errores['nombres_u'] = 'Los nombres solo deben contener letras';
-
-    if (!f.apellido_paterno_u) errores['apellido_paterno_u'] = 'El apellido paterno es requerido';
-    else if (!SOLO_LETRAS.test(f.apellido_paterno_u))
-      errores['apellido_paterno_u'] = 'El apellido paterno solo debe contener letras';
-
-    if (f.apellido_materno_u && !SOLO_LETRAS.test(f.apellido_materno_u)) {
-      errores['apellido_materno_u'] = 'El apellido materno solo debe contener letras';
+  /** Normaliza espacios en nombres y apellidos (igual que el backend) antes de validar. */
+  private normalizarNombres(): void {
+    const c = this.form.controls;
+    for (const control of [c.nombres_u, c.apellido_paterno_u, c.apellido_materno_u]) {
+      control.setValue(limpiarEspacios(control.value));
     }
-    if (!f.id_posicion) errores['id_posicion'] = 'Selecciona una posición';
-
-    if (!this.modoEditar()) {
-      if (!f.contrasenia_u) errores['contrasenia_u'] = 'La contraseña es requerida';
-      else if (f.contrasenia_u.length < 6 || f.contrasenia_u.length > 72) {
-        errores['contrasenia_u'] = 'La contraseña debe tener entre 6 y 72 caracteres';
-      }
-    }
-    return errores;
   }
 
   protected guardar(): void {
-    if (!this.estado.validar(this.validarFormulario())) return;
+    this.normalizarNombres();
+    if (!this.estado.validarFormulario(this.form, MENSAJES)) return;
 
     const {
       nombres_u,
@@ -226,7 +233,7 @@ export class Usuarios implements OnInit {
       rol_u,
       id_posicion,
       autorizado,
-    } = this.form;
+    } = this.form.getRawValue();
     const actual = this.seleccionado();
 
     if (this.modoEditar() && actual) {
