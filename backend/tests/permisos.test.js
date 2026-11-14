@@ -124,7 +124,7 @@ describe('checkPermission', () => {
 
 describe('asignar permisos (admin)', () => {
   const guardar = (id, body, token = ADMIN) =>
-    request(app).post(`/api/usuario/${id}/permisos`).set('Authorization', token).send(body);
+    request(app).post(`/api/usuarios/${id}/permisos`).set('Authorization', token).send(body);
 
   test('reemplaza permisos dentro de una transacción y quita duplicados', async () => {
     const res = await guardar(2, { submodulos_ids: [8, 8], dashboards_ids: [1, 2] });
@@ -159,7 +159,7 @@ describe('asignar permisos (admin)', () => {
 
   test('ver permisos asignados de un usuario', async () => {
     permisoRepository.asignados.mockResolvedValue({ submodulos_ids: [8], dashboards_ids: [1] });
-    const res = await get('/api/usuario/2/permisos', ADMIN);
+    const res = await get('/api/usuarios/2/permisos', ADMIN);
     expect(res.body).toEqual({ submodulos_ids: [8], dashboards_ids: [1] });
   });
 

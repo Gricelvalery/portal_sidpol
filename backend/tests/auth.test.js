@@ -133,7 +133,7 @@ describe('middleware de autenticación (verificarToken)', () => {
   });
 
   test('el rol sale de la BD, no del token: token "admin" de un user → 403 en rutas de admin', async () => {
-    const res = await request(app).get('/api/usuario').set('Authorization', tokenDe(2, 'admin'));
+    const res = await request(app).get('/api/usuarios').set('Authorization', tokenDe(2, 'admin'));
     expect(res.status).toBe(403);
   });
 });

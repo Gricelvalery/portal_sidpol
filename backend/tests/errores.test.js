@@ -10,7 +10,7 @@ const { tokenDe, configurarSesiones, silenciarConsola } = require('./helpers');
 const ADMIN = tokenDe(1, 'admin');
 const crearArea = () =>
   request(app)
-    .post('/api/area')
+    .post('/api/areas')
     .set('Authorization', ADMIN)
     .send({ nombre_area: 'Área X', descripcion_area: 'Descripción' });
 
@@ -26,6 +26,22 @@ test('ruta inexistente → 404 en JSON', async () => {
   expect(res.status).toBe(404);
   expect(res.body).toEqual({ error: 'Ruta no encontrada' });
 });
+
+test.each(['/api/usuario', '/api/area', '/api/posicion'])(
+  'Q4: la ruta antigua en singular %s ya no existe (404, sin alias)',
+  async (ruta) => {
+    const res = await request(app).get(ruta).set('Authorization', ADMIN);
+    expect(res.status).toBe(404);
+  },
+);
+
+test.each(['/api/usuarios', '/api/areas', '/api/posiciones'])(
+  'Q4: la ruta en plural %s existe',
+  async (ruta) => {
+    const res = await request(app).get(ruta); // sin token → 401, no 404
+    expect(res.status).toBe(401);
+  },
+);
 
 test('JSON mal formado → 400', async () => {
   const res = await request(app)

@@ -30,7 +30,7 @@ describe('Modulos (pantalla CRUD)', () => {
       },
     ]);
     backend
-      .expectOne(`${API}/area`)
+      .expectOne(`${API}/areas`)
       .flush([{ id_area: 1, nombre_area: 'DIRTIC', descripcion_area: null }]);
     await fixture.whenStable();
     return { fixture, el: fixture.nativeElement as HTMLElement };
@@ -106,7 +106,7 @@ describe('Modulos (pantalla CRUD)', () => {
     el.querySelector<HTMLButtonElement>('.btn-guardar')!.click();
     backend.expectOne(`${API}/modulos/1`).flush({});
     backend.expectOne(`${API}/modulos`).flush([]);
-    backend.expectOne(`${API}/area`).flush([]);
+    backend.expectOne(`${API}/areas`).flush([]);
     await fixture.whenStable();
     expect(el.querySelector('app-modal')).toBeNull();
     expect(

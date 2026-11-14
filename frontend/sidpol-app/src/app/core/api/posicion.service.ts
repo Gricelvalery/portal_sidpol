@@ -7,7 +7,7 @@ import { Posicion } from '../models';
 @Injectable({ providedIn: 'root' })
 export class PosicionService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/posicion`;
+  private readonly url = `${environment.apiUrl}/posiciones`;
 
   listar(): Observable<Posicion[]> {
     return this.http.get<Posicion[]>(this.url);

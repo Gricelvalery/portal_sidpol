@@ -7,9 +7,9 @@ Estado de los pasos acordados (un commit por paso, sin push).
 | 1 | Seguridad: Angular 21.2.8 → 21.2.25 (XSS/DoS) | ✅ Hecho | `35a3fff` |
 | 2 | ESLint + Prettier (config) y `.gitattributes` (LF) | ✅ Hecho | `cc12cfe` |
 | 3 | Formato con Prettier (solo estilo) | ✅ Hecho | `d608ad7` |
-| 4 | Logger pino (sin contraseñas, tokens ni body del login) | ✅ Hecho | (este commit) |
-| 5 | Q4: rutas de la API en plural + criterio de nombres de columnas | ⏳ Siguiente | |
-| 6 | Validación de campos vacíos / solo espacios (front y back) + pruebas + tabla | Pendiente | |
+| 4 | Logger pino (sin contraseñas, tokens ni body del login) | ✅ Hecho | `86f2948` |
+| 5 | Q4: rutas de la API en plural + criterio de nombres de columnas | ✅ Hecho | (este commit) |
+| 6 | Validación de campos vacíos / solo espacios (front y back) + pruebas + tabla | ⏳ Siguiente | |
 | 7 | OpenAPI / Swagger en `/api/docs` | Pendiente | |
 | 8 | README en la raíz | Pendiente | |
 | 9 | GitHub Actions (lint, pruebas, audit) | Pendiente | |

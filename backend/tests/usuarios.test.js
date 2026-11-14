@@ -25,7 +25,7 @@ const nuevo = (extra = {}) => ({
   ...extra,
 });
 const crear = (body, token = ADMIN) =>
-  request(app).post('/api/usuario').set('Authorization', token).send(body);
+  request(app).post('/api/usuarios').set('Authorization', token).send(body);
 
 beforeEach(() => {
   configurarSesiones(usuarioRepository, {
@@ -50,7 +50,7 @@ beforeEach(() => {
   usuarioRepository.eliminar.mockResolvedValue(true);
 });
 
-describe('POST /api/usuario (crear)', () => {
+describe('POST /api/usuarios (crear)', () => {
   test('genera username y correo, fuerza rol "user", guarda hash y NO crea permisos', async () => {
     const res = await crear(nuevo({ rol_u: 'admin', correo_u: 'yo@gmail.com', autorizado: true }));
 
@@ -145,10 +145,10 @@ describe('POST /api/usuario (crear)', () => {
   });
 });
 
-describe('PUT /api/usuario/:id (editar)', () => {
+describe('PUT /api/usuarios/:id (editar)', () => {
   const editar = (id, body, token = ADMIN) =>
     request(app)
-      .put(`/api/usuario/${id}`)
+      .put(`/api/usuarios/${id}`)
       .set('Authorization', token)
       .send({
         nombres_u: 'Pedro',
@@ -203,8 +203,8 @@ describe('PUT /api/usuario/:id (editar)', () => {
   });
 });
 
-describe('DELETE /api/usuario/:id', () => {
-  const borrar = (id) => request(app).delete(`/api/usuario/${id}`).set('Authorization', ADMIN);
+describe('DELETE /api/usuarios/:id', () => {
+  const borrar = (id) => request(app).delete(`/api/usuarios/${id}`).set('Authorization', ADMIN);
 
   test('elimina permisos y usuario en la misma transacción', async () => {
     const res = await borrar(3);
@@ -232,20 +232,20 @@ describe('DELETE /api/usuario/:id', () => {
   });
 });
 
-describe('GET /api/usuario', () => {
+describe('GET /api/usuarios', () => {
   test('admin lista usuarios sin contraseñas', async () => {
     usuarioRepository.listar.mockResolvedValue([
       usuarioDe({ id_u: 2 }),
       usuarioDe({ id_u: 3, username: 'ana.ruiz' }),
     ]);
-    const res = await request(app).get('/api/usuario').set('Authorization', ADMIN);
+    const res = await request(app).get('/api/usuarios').set('Authorization', ADMIN);
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);
     expect(JSON.stringify(res.body)).not.toMatch(/contrasenia|NO-DEBE-SALIR/);
   });
 
   test('user → 403', async () => {
-    expect((await request(app).get('/api/usuario').set('Authorization', tokenDe(2))).status).toBe(
+    expect((await request(app).get('/api/usuarios').set('Authorization', tokenDe(2))).status).toBe(
       403,
     );
   });

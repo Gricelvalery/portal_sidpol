@@ -7,7 +7,7 @@ import { Area, AreaPayload } from '../models';
 @Injectable({ providedIn: 'root' })
 export class AreaService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.apiUrl}/area`;
+  private readonly url = `${environment.apiUrl}/areas`;
 
   listar(): Observable<Area[]> {
     return this.http.get<Area[]>(this.url);
