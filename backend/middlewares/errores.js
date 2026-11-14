@@ -36,12 +36,12 @@ const errorHandler = (err, req, res, next) => {
 
   if (err.code && ERRORES_PG[err.code]) {
     const [status, mensaje] = ERRORES_PG[err.code];
-    console.warn(`[BD ${err.code}] ${req.method} ${req.originalUrl}: ${err.message}`);
+    req.log.warn({ err }, `Error de BD ${err.code}`);
     return res.status(status).json({ error: mensaje });
   }
 
   // Inesperado: el detalle queda solo en el log del servidor
-  console.error(`[500] ${req.method} ${req.originalUrl}`, err);
+  req.log.error({ err }, 'Error inesperado');
   res.status(500).json({ error: 'Error interno' });
 };
 

@@ -2,8 +2,9 @@
 const env = require('./config/env');
 const app = require('./app');
 const db = require('./config/db');
+const { logger } = require('./config/logger');
 
 app.listen(env.PORT, () => {
-  console.log(`Servidor en http://localhost:${env.PORT}`);
+  logger.info({ puerto: env.PORT }, `Servidor en http://localhost:${env.PORT}`);
   db.verificarConexion();
 });

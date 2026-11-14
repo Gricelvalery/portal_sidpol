@@ -85,18 +85,27 @@ const env = {
   CORS_ORIGIN,
   POWERBI_HOSTS,
   TRUST_PROXY,
+  LOG_LEVEL: texto('LOG_LEVEL', {
+    porDefecto: process.env.NODE_ENV === 'test' ? 'silent' : 'info',
+  }),
   RATE_LIMIT_API: entero('RATE_LIMIT_API', { porDefecto: 500 }),
   RATE_LIMIT_LOGIN: entero('RATE_LIMIT_LOGIN', { porDefecto: 5, max: 100 }),
   BCRYPT_COST: entero('BCRYPT_COST', { porDefecto: 12, min: 4, max: 15 }),
 };
+
+const NIVELES_LOG = ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'];
+if (!NIVELES_LOG.includes(env.LOG_LEVEL)) {
+  errores.push('LOG_LEVEL debe ser uno de: ' + NIVELES_LOG.join(', '));
+}
 
 if (env.NODE_ENV === 'production' && env.BCRYPT_COST < 12) {
   errores.push('BCRYPT_COST debe ser al menos 12 en producción');
 }
 
 if (errores.length > 0) {
-  console.error('Configuración inválida en backend/.env (ver backend/.env.example):');
-  for (const e of errores) console.error('  - ' + e);
+  // El logger depende de esta configuración, así que aquí se escribe directo a stderr
+  process.stderr.write('Configuración inválida en backend/.env (ver backend/.env.example):\n');
+  for (const e of errores) process.stderr.write('  - ' + e + '\n');
   process.exit(1);
 }
 

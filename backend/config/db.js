@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const env = require('./env');
+const { logger } = require('./logger');
 
 const db = new Pool({
   host: env.DB_HOST,
@@ -11,15 +12,15 @@ const db = new Pool({
 });
 
 // Un cliente inactivo que se cae no debe tumbar el proceso
-db.on('error', (err) => console.error('Error en el pool de BD:', err.message));
+db.on('error', (err) => logger.error({ err }, 'Error en el pool de BD'));
 
 // Comprueba la conexión sin retener un cliente del pool
 db.verificarConexion = async () => {
   try {
     await db.query('SELECT 1');
-    console.log('Conectado a la base de datos');
+    logger.info('Conectado a la base de datos');
   } catch (err) {
-    console.error('No se pudo conectar a la base de datos:', err.message);
+    logger.error({ err }, 'No se pudo conectar a la base de datos');
   }
 };
 

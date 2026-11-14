@@ -22,7 +22,7 @@ module.exports = [
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' },
       ],
       eqeqeq: ['error', 'always'],
-      'no-console': 'warn', // pasa a 'error' cuando todo use el logger (pino)
+      'no-console': 'error', // los registros van por el logger (config/logger.js)
       'prefer-const': 'error',
       'no-var': 'error',
     },
