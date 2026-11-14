@@ -21,11 +21,13 @@ export interface ColumnaTabla<T> {
  */
 @Directive({ selector: 'ng-template[appCelda]' })
 export class CeldaTabla<T> {
-  readonly nombre = input.required<string>({ alias: 'appCelda' });
-  readonly tipo = input<readonly T[]>([], { alias: 'appCeldaDe' });
+  /** Nombre de la columna que usa esta plantilla. */
+  readonly appCelda = input.required<string>();
+  /** Solo para el tipado de la fila; no se usa en tiempo de ejecución. */
+  readonly appCeldaDe = input<readonly T[]>([]);
   readonly plantilla = inject<TemplateRef<{ $implicit: T }>>(TemplateRef);
 
-  static ngTemplateContextGuard<T>(_dir: CeldaTabla<T>, ctx: unknown): ctx is { $implicit: T } {
+  static ngTemplateContextGuard<T>(_dir: CeldaTabla<T>, _ctx: unknown): _ctx is { $implicit: T } {
     return true;
   }
 }
@@ -52,7 +54,7 @@ export class DataTable<T> {
   private readonly celdas = contentChildren(CeldaTabla);
   protected readonly plantillas = computed(() => {
     const mapa = new Map<string, TemplateRef<{ $implicit: T }>>();
-    for (const c of this.celdas()) mapa.set(c.nombre(), c.plantilla as TemplateRef<{ $implicit: T }>);
+    for (const c of this.celdas()) mapa.set(c.appCelda(), c.plantilla as TemplateRef<{ $implicit: T }>);
     return mapa;
   });
 

@@ -12,7 +12,11 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -31,7 +35,12 @@
     "semver@^7": "7.8.5"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "9.1.2",
+    "globals": "17.13.0",
     "jest": "30.5.2",
+    "prettier": "3.9.10",
     "supertest": "7.3.1"
   },
   "jest": {

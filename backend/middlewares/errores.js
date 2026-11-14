@@ -16,7 +16,6 @@ const notFound = (req, res) => {
 };
 
 /** Manejo centralizado de errores: nunca expone mensajes internos ni de la BD. */
-// eslint-disable-next-line no-unused-vars
 const errorHandler = (err, req, res, next) => {
   if (res.headersSent) return next(err);
 
